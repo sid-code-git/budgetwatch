@@ -5,8 +5,8 @@
     <h1>Do you know where<br><span class="highlight">your taxes go?</span></h1>
     <p class="hero-sub">Every year your town spends your tax money. That spending is public record — but buried in documents most people never see. We read them so you don't have to, and publish exactly what deserves a question.</p>
     <div class="hero-actions">
-      <a href="/reports/" class="btn-primary">See Where the Money Went</a>
-      <a href="/map/" class="btn-secondary">Find Your Town</a>
+      <a href="{{ .Site.BaseURL }}reports/" class="btn-primary">See Where the Money Went</a>
+      <a href="{{ .Site.BaseURL }}map/" class="btn-secondary">Find Your Town</a>
     </div>
     <div class="hero-stats">
       <div>
@@ -34,7 +34,7 @@
     <div class="section-header">
       <h2 class="section-title">Latest Reports</h2>
       {{ if gt (len (where .Site.RegularPages "Section" "reports")) 6 }}
-      <a href="/reports/" class="section-link">View all</a>
+      <a href="{{ .Site.BaseURL }}reports/" class="section-link">View all</a>
       {{ end }}
     </div>
     <div class="report-grid">
@@ -50,7 +50,7 @@
         <span class="card-read">Read report</span>
       </a>
       {{ else }}
-      <p class="empty-state">No reports published yet. <a href="/submit/">Submit a town</a> to get started.</p>
+      <p class="empty-state">No reports published yet. <a href="{{ .Site.BaseURL }}submit/">Submit a town</a> to get started.</p>
       {{ end }}
     </div>
   </div>
@@ -62,7 +62,7 @@
       <div class="mission-card">
         <h2>Your money. Your right to know.</h2>
         <p>The average American household pays thousands in local taxes every year. Where does it go? Most towns publish a budget — but it's a 200-page PDF filed with the town clerk that almost nobody reads. We read it for you.</p>
-        <a href="/about/">Our full mission</a>
+        <a href="{{ .Site.BaseURL }}about/">Our full mission</a>
       </div>
       <div class="mission-card">
         <h2>How it works</h2>
@@ -72,7 +72,7 @@
           <li>Every flag becomes a <em>question to raise</em> — never an accusation.</li>
           <li>Every figure is cited to the source page.</li>
         </ol>
-        <a href="/methodology/">Read the methodology</a>
+        <a href="{{ .Site.BaseURL }}methodology/">Read the methodology</a>
       </div>
     </div>
   </div>
