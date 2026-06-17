@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} · {{ .Site.Title }}{{ end }}</title>
   <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
-  <link rel="stylesheet" href="{{ "css/style.css" | absURL }}">
-  <link rel="alternate" type="application/rss+xml" title="{{ .Site.Title }}" href="{{ "feed.xml" | absURL }}">
+  <link rel="stylesheet" href="{{ .Site.BaseURL }}css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="{{ .Site.Title }}" href="{{ .Site.BaseURL }}feed.xml">
 </head>
 <body>
   <header class="site-header">
     <div class="container">
       <a href="{{ .Site.BaseURL }}" class="site-title">Budget Watch</a>
       <nav>
-        <a href="{{ "reports/" | absURL }}">Reports</a>
-        <a href="{{ "map/" | absURL }}">Map</a>
-        <a href="{{ "methodology/" | absURL }}">Methodology</a>
-        <a href="{{ "about/" | absURL }}">About</a>
-        <a href="{{ "submit/" | absURL }}" class="nav-cta">Submit a Town</a>
+        <a href="{{ .Site.BaseURL }}reports/">Reports</a>
+        <a href="{{ .Site.BaseURL }}map/">Map</a>
+        <a href="{{ .Site.BaseURL }}methodology/">Methodology</a>
+        <a href="{{ .Site.BaseURL }}about/">About</a>
+        <a href="{{ .Site.BaseURL }}submit/" class="nav-cta">Submit a Town</a>
       </nav>
     </div>
   </header>
@@ -28,7 +28,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <p>Budget Watch · <a href="{{ "feed.xml" | absURL }}">RSS Feed</a> · <a href="{{ "methodology/" | absURL }}">How we analyze</a></p>
+      <p>Budget Watch · <a href="{{ .Site.BaseURL }}feed.xml">RSS Feed</a> · <a href="{{ .Site.BaseURL }}methodology/">How we analyze</a></p>
       <p class="footer-note">You pay taxes. You deserve to know where the money goes. We report facts and raise questions — every figure cited to its source.</p>
     </div>
   </footer>
