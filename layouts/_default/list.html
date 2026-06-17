@@ -1,0 +1,27 @@
+{{ define "main" }}
+<div class="container page-content">
+  <h1>{{ .Title }}</h1>
+  {{ with .Content }}<div class="prose">{{ . }}</div>{{ end }}
+
+  <div class="report-grid">
+    {{ range .Pages }}
+    <a href="{{ .Permalink }}" class="report-card">
+      <div class="card-top">
+        {{ with .Params.severity }}
+        <span class="badge badge-{{ . }}">{{ . }} flags</span>
+        {{ end }}
+        {{ if .Params.news_desert }}
+        <span class="badge badge-desert">no local paper</span>
+        {{ end }}
+      </div>
+      <h3>{{ .Title }}</h3>
+      <p class="card-meta">{{ .Params.town }}, {{ .Params.state }} · FY{{ .Params.fiscal_year }}</p>
+      <p class="card-summary">{{ .Summary }}</p>
+      <span class="card-read">Read report →</span>
+    </a>
+    {{ else }}
+    <p class="empty-state">No reports yet.</p>
+    {{ end }}
+  </div>
+</div>
+{{ end }}

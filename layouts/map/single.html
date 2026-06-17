@@ -1,0 +1,50 @@
+{{ define "main" }}
+<div class="container page-content">
+  <h1>Towns We've Analyzed</h1>
+  <p class="map-intro">Every pin is a published report. Click a pin to read it.</p>
+  <div id="map"></div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map = L.map('map').setView([39.5, -98.35], 4);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+  maxZoom: 18
+}).addTo(map);
+
+const severityColors = { high: '#c0392b', medium: '#e67e22', low: '#27ae60' };
+
+function makeIcon(severity) {
+  const color = severityColors[severity] || '#555';
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7]
+  });
+}
+
+{{ range where .Site.RegularPages "Section" "reports" }}
+{{ with .Params.lat }}{{ with $.Site.GetPage (printf "/reports/%s" ($.Page.File.ContentBaseName)) }}{{ end }}{{ end }}
+{{ if and .Params.lat .Params.lng }}
+L.marker([{{ .Params.lat }}, {{ .Params.lng }}], { icon: makeIcon('{{ .Params.severity }}') })
+  .addTo(map)
+  .bindPopup(`
+    <strong><a href="{{ .Permalink }}">{{ .Title }}</a></strong><br>
+    {{ .Params.town }}, {{ .Params.state }} &nbsp;·&nbsp; FY{{ .Params.fiscal_year }}<br>
+    {{ if .Params.news_desert }}<em>No local newspaper</em><br>{{ end }}
+    <a href="{{ .Permalink }}">Read report →</a>
+  `);
+{{ end }}
+{{ end }}
+</script>
+
+<div class="map-legend">
+  <span><span class="legend-dot" style="background:#c0392b"></span> High flags</span>
+  <span><span class="legend-dot" style="background:#e67e22"></span> Medium flags</span>
+  <span><span class="legend-dot" style="background:#27ae60"></span> Low flags</span>
+</div>
+{{ end }}

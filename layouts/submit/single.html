@@ -1,0 +1,83 @@
+{{ define "main" }}
+<div class="container page-content">
+  <h1>Submit a Town</h1>
+  <p class="prose" style="margin-bottom:2rem; max-width:560px;">Know a town that deserves a closer look? We prioritize towns with no local newspaper and a publicly available budget document. You don't need to be an expert — just a tip and a link.</p>
+
+  <form class="submit-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+
+    <div class="form-group">
+      <label for="town">Town / City name</label>
+      <input type="text" id="town" name="town" required placeholder="e.g. Harlan, Iowa">
+    </div>
+
+    <div class="form-group">
+      <label for="state">State</label>
+      <input type="text" id="state" name="state" required placeholder="e.g. Iowa">
+    </div>
+
+    <div class="form-group">
+      <label for="population">Approximate population</label>
+      <input type="number" id="population" name="population" placeholder="e.g. 5000">
+    </div>
+
+    <div class="form-group">
+      <label for="newspaper">Does this town have a local newspaper?</label>
+      <select id="newspaper" name="newspaper">
+        <option value="no">No — news desert</option>
+        <option value="yes">Yes</option>
+        <option value="unsure">Not sure</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="budget_url">Link to the published budget document (if you have it)</label>
+      <input type="url" id="budget_url" name="budget_url" placeholder="https://...">
+      <p class="form-hint">Usually found on the town's official website under "Finance," "Budget," or "Town Documents." A PDF is fine.</p>
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Anything else we should know?</label>
+      <textarea id="notes" name="notes" placeholder="Context, concerns, or just how you found us."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Would you like to be credited if we publish a report?</label>
+      <div class="credit-options">
+        <label class="credit-option">
+          <input type="radio" name="credit" value="named" required>
+          <span>
+            <strong>Credit me by name</strong>
+            <span class="credit-desc">Your name will appear in the report as the tip source.</span>
+          </span>
+        </label>
+        <label class="credit-option">
+          <input type="radio" name="credit" value="anonymous">
+          <span>
+            <strong>Remain anonymous</strong>
+            <span class="credit-desc">We'll never publish your name or contact information.</span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group" id="credit-name-group" style="display:none">
+      <label for="credit_name">Your name (as you'd like it to appear)</label>
+      <input type="text" id="credit_name" name="credit_name" placeholder="e.g. Jane Smith">
+      <p class="form-hint">Optional: add a title or affiliation, e.g. "Jane Smith, Harlan resident."</p>
+    </div>
+
+    <button type="submit" class="btn-submit">Submit →</button>
+  </form>
+
+  <p style="margin-top:2rem; font-size:.83rem; color:var(--ink-3); max-width:540px;"><strong>Note:</strong> Submitting a town doesn't guarantee a report. We review every submission and prioritize by data availability, news-desert status, and capacity. We'll follow up if we need more.</p>
+</div>
+
+<script>
+document.querySelectorAll('input[name="credit"]').forEach(function(radio) {
+  radio.addEventListener('change', function() {
+    document.getElementById('credit-name-group').style.display =
+      this.value === 'named' ? 'block' : 'none';
+  });
+});
+</script>
+{{ end }}

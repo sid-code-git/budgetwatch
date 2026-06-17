@@ -1,0 +1,80 @@
+{{ define "main" }}
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Your tax dollars. Your right to know.</div>
+    <h1>Do you know where<br><span class="highlight">your taxes go?</span></h1>
+    <p class="hero-sub">Every year your town spends your tax money. That spending is public record — but buried in documents most people never see. We read them so you don't have to, and publish exactly what deserves a question.</p>
+    <div class="hero-actions">
+      <a href="/reports/" class="btn-primary">See Where the Money Went</a>
+      <a href="/map/" class="btn-secondary">Find Your Town</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">{{ len (where .Site.RegularPages "Section" "reports") }}</div>
+        <div class="hero-stat-label">Reports published</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">{{ len (where (where .Site.RegularPages "Section" "reports") ".Params.news_desert" true) }}</div>
+        <div class="hero-stat-label">News-desert towns</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">5</div>
+        <div class="hero-stat-label">Checks per report</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">$0</div>
+        <div class="hero-stat-label">Cost to read</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-latest">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Latest Reports</h2>
+      {{ if gt (len (where .Site.RegularPages "Section" "reports")) 6 }}
+      <a href="/reports/" class="section-link">View all</a>
+      {{ end }}
+    </div>
+    <div class="report-grid">
+      {{ range first 6 (where .Site.RegularPages "Section" "reports") }}
+      <a href="{{ .Permalink }}" class="report-card">
+        <div class="card-top">
+          {{ with .Params.severity }}<span class="badge badge-{{ . }}">{{ . }} flags</span>{{ end }}
+          {{ if .Params.news_desert }}<span class="badge badge-desert">no local paper</span>{{ end }}
+        </div>
+        <h3>{{ .Title }}</h3>
+        <p class="card-meta">{{ .Params.town }}, {{ .Params.state }} · FY{{ .Params.fiscal_year }}</p>
+        <p class="card-summary">{{ .Summary }}</p>
+        <span class="card-read">Read report</span>
+      </a>
+      {{ else }}
+      <p class="empty-state">No reports published yet. <a href="/submit/">Submit a town</a> to get started.</p>
+      {{ end }}
+    </div>
+  </div>
+</section>
+
+<section class="section-mission">
+  <div class="container">
+    <div class="mission-grid">
+      <div class="mission-card">
+        <h2>Your money. Your right to know.</h2>
+        <p>The average American household pays thousands in local taxes every year. Where does it go? Most towns publish a budget — but it's a 200-page PDF filed with the town clerk that almost nobody reads. We read it for you.</p>
+        <a href="/about/">Our full mission</a>
+      </div>
+      <div class="mission-card">
+        <h2>How it works</h2>
+        <ol>
+          <li>We obtain the official published budget document.</li>
+          <li>We run five quantitative checks against prior years and peer towns.</li>
+          <li>Every flag becomes a <em>question to raise</em> — never an accusation.</li>
+          <li>Every figure is cited to the source page.</li>
+        </ol>
+        <a href="/methodology/">Read the methodology</a>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}

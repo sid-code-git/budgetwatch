@@ -1,0 +1,17 @@
+baseURL: "https://budgetwatch.org/"
+locale: "en-us"
+title: "Budget Watch"
+
+params:
+  description: "You pay taxes. You deserve to know where the money goes."
+  tagline: "Your taxes. Your right to know."
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+
+outputs:
+  home:
+    - HTML
+    - RSS
