@@ -1,8 +1,6 @@
 backend:
-  name: github
-  repo: sid-code-git/budgetwatch
+  name: git-gateway
   branch: main
-  base_url: https://sveltia-cms-auth.netlify.app
 
 media_folder: static/images
 public_folder: /images
@@ -17,7 +15,7 @@ collections:
     fields:
       - { label: Title, name: title, widget: string, hint: "e.g. Springfield, IL — FY2024 Budget Analysis" }
       - { label: Town, name: town, widget: string }
-      - { label: State, name: state, widget: string, pattern: ['^[A-Z]{2}$', "Two capital letters, e.g. IL"] }
+      - { label: State, name: state, widget: string, hint: "Two capital letters, e.g. IL" }
       - { label: Fiscal Year, name: fiscal_year, widget: string, hint: "e.g. 2024" }
       - { label: Population, name: population, widget: number }
       - label: Severity
@@ -28,14 +26,13 @@ collections:
           - { label: "🟠 Medium", value: medium }
           - { label: "🟢 Low", value: low }
       - { label: News Desert (no local newspaper), name: news_desert, widget: boolean, default: false }
-      - { label: Latitude, name: lat, widget: number, value_type: float, hint: "Google the town name + 'coordinates'" }
+      - { label: Latitude, name: lat, widget: number, value_type: float, hint: "Google the town name + coordinates" }
       - { label: Longitude, name: lng, widget: number, value_type: float }
-      - { label: Source URL (budget document), name: source_url, widget: string, required: false }
+      - { label: Source URL (budget document link), name: source_url, widget: string, required: false }
       - { label: Draft, name: draft, widget: boolean, default: true, hint: "Turn off to publish immediately" }
       - label: Body
         name: body
         widget: markdown
-        hint: "Write your summary and paste finding blocks here. See the report template for the HTML block format."
 
   - name: pages
     label: Pages
