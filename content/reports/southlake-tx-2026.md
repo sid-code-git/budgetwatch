@@ -9,7 +9,7 @@ news_desert: false
 lat: 32.9412
 lng: -97.1342
 source_url: "https://www.cityofsouthlake.com/DocumentCenter/View/44889/FY-2026-Budget-Book-Linked"
-draft: true
+draft: false
 ---
 
 ## I. Executive Summary
