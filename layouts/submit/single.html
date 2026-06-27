@@ -5,7 +5,7 @@
     <p class="submit-intro">You don't need to be a journalist. If you've dug into your town's budget and found something the public should know about, we want to hear from you. Fill out as much as you can — we'll review every submission and publish what we can verify.</p>
   </div>
 
-  <form class="submit-form" name="town-report" method="POST" netlify netlify-honeypot="bot-field" action="/submit-thanks/">
+  <form class="submit-form" name="town-report" method="POST" netlify netlify-honeypot="bot-field" action="{{ .Site.BaseURL }}submit-thanks/">
     <input type="hidden" name="form-name" value="town-report">
     <p class="hidden"><label>Don't fill this out: <input name="bot-field"></label></p>
 
