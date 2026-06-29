@@ -1,0 +1,163 @@
+{{ define "main" }}
+<div class="apply-page">
+
+  <div class="apply-hero">
+    <div class="content-inner">
+      <div class="section-eyebrow">Join the Team</div>
+      <h1>Become a Public Budget Analyst</h1>
+      <p class="apply-intro">Budget Watch is looking for researchers who believe taxpayers deserve to understand where their money goes. You don't need a finance degree — you need curiosity, patience with spreadsheets, and a commitment to getting the numbers right.</p>
+    </div>
+  </div>
+
+  <div class="content-inner apply-body">
+
+    <div class="apply-grid">
+
+      <!-- LEFT: What you'll do -->
+      <div class="apply-left">
+
+        <div class="apply-section">
+          <h2>What you'll do</h2>
+          <ul class="apply-list">
+            <li>Obtain official municipal budget documents from town government websites</li>
+            <li>Analyze spending across all major categories using our 10-section framework</li>
+            <li>Compare year-over-year trends and benchmark against peer towns</li>
+            <li>Identify red flags — structural deficits, fund balance erosion, unusual line-item spikes</li>
+            <li>Write clear, neutral, cited findings that any taxpayer can understand</li>
+            <li>Submit completed reports through our editorial review process</li>
+          </ul>
+        </div>
+
+        <div class="apply-section">
+          <h2>Who we're looking for</h2>
+          <div class="trait-grid">
+            <div class="trait-card">
+              <div class="trait-icon">🔍</div>
+              <h4>Detail-oriented</h4>
+              <p>You catch inconsistencies. You double-check numbers. You cite page numbers.</p>
+            </div>
+            <div class="trait-card">
+              <div class="trait-icon">⚖️</div>
+              <h4>Neutral</h4>
+              <p>You raise questions — you don't make accusations. The data speaks for itself.</p>
+            </div>
+            <div class="trait-card">
+              <div class="trait-icon">📊</div>
+              <h4>Comfortable with data</h4>
+              <p>You can read a budget table, calculate percentages, and spot what looks wrong.</p>
+            </div>
+            <div class="trait-card">
+              <div class="trait-icon">✍️</div>
+              <h4>Clear writer</h4>
+              <p>You can explain a pension liability to someone who has never heard of one.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="apply-section">
+          <h2>What you get</h2>
+          <ul class="apply-list">
+            <li>A byline on every report you publish</li>
+            <li>Access to our research framework, templates, and editorial feedback</li>
+            <li>Real published work you can show to colleges, employers, or grad schools</li>
+            <li>Experience in public finance analysis and accountability journalism</li>
+          </ul>
+          <p class="apply-note">This is a volunteer research role. Budget Watch is an independent, unfunded project.</p>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Application form -->
+      <div class="apply-right">
+        <div class="apply-form-card">
+          <h2>Apply</h2>
+          <p style="font-size:.9rem;color:#6b6b80;margin-bottom:1.5rem">Takes about 5 minutes. We review every application.</p>
+
+          <form name="analyst-application" method="POST" netlify netlify-honeypot="bot-field" action="{{ .Site.BaseURL }}apply-thanks/">
+            <input type="hidden" name="form-name" value="analyst-application">
+            <p style="display:none"><label>Skip: <input name="bot-field"></label></p>
+
+            <div class="aform-group">
+              <label>Full name <span class="req">*</span></label>
+              <input type="text" name="name" required placeholder="Jane Smith">
+            </div>
+
+            <div class="aform-group">
+              <label>Email <span class="req">*</span></label>
+              <input type="email" name="email" required placeholder="jane@example.com">
+            </div>
+
+            <div class="aform-group">
+              <label>Where are you based? <span class="req">*</span></label>
+              <input type="text" name="location" required placeholder="e.g. Austin, TX">
+            </div>
+
+            <div class="aform-group">
+              <label>Current occupation or school</label>
+              <input type="text" name="occupation" placeholder="e.g. college student, journalist, accountant">
+            </div>
+
+            <div class="aform-group">
+              <label>Why do you want to do this work? <span class="req">*</span></label>
+              <textarea name="motivation" rows="4" required placeholder="What draws you to public budget analysis? Is there a specific town or issue that motivated you?"></textarea>
+            </div>
+
+            <div class="aform-group">
+              <label>Have you ever read a municipal budget, financial report, or audit? <span class="req">*</span></label>
+              <select name="experience" required>
+                <option value="">— select —</option>
+                <option value="yes-extensively">Yes, extensively</option>
+                <option value="yes-some">Yes, a few times</option>
+                <option value="no-but-comfortable">No, but I'm comfortable with financial documents</option>
+                <option value="no-new">No — this would be new for me</option>
+              </select>
+            </div>
+
+            <div class="aform-group">
+              <label>Which town would you want to cover first — and why?</label>
+              <textarea name="town_interest" rows="3" placeholder="e.g. My hometown of Harlan, Iowa — I grew up there and noticed the roads kept getting worse while the admin budget kept growing."></textarea>
+            </div>
+
+            <div class="aform-group">
+              <label>Anything else you'd like us to know?</label>
+              <textarea name="other" rows="3" placeholder="Links to past writing, relevant skills, availability, etc."></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary btn-full">Submit Application →</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.apply-page { padding-bottom: 5rem; }
+.apply-hero { background: #0a0a0f; color: white; padding: 5rem 0 4rem; margin-bottom: 3rem; }
+.apply-hero h1 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; letter-spacing: -.03em; margin: .5rem 0 1rem; }
+.apply-intro { font-size: 1.1rem; color: rgba(255,255,255,.7); line-height: 1.7; max-width: 640px; }
+.apply-grid { display: grid; grid-template-columns: 1fr 420px; gap: 4rem; align-items: start; }
+.apply-section { margin-bottom: 2.5rem; }
+.apply-section h2 { font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: 1rem; padding-bottom: .6rem; border-bottom: 2px solid #5b5bd6; display: inline-block; }
+.apply-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: .6rem; }
+.apply-list li { font-size: .95rem; line-height: 1.55; padding-left: 1.25rem; position: relative; color: #2a2a3a; }
+.apply-list li::before { content: "→"; position: absolute; left: 0; color: #5b5bd6; font-weight: 700; }
+.apply-note { font-size: .8rem; color: #9090a0; margin-top: .75rem; font-style: italic; }
+.trait-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.trait-card { background: #f8f8fd; border: 1px solid #e5e5f0; border-radius: 10px; padding: 1rem; }
+.trait-icon { font-size: 1.4rem; margin-bottom: .4rem; }
+.trait-card h4 { font-size: .88rem; font-weight: 700; margin-bottom: .3rem; }
+.trait-card p { font-size: .8rem; color: #6b6b80; line-height: 1.5; margin: 0; }
+.apply-form-card { background: white; border: 1.5px solid #e5e5f0; border-radius: 16px; padding: 2rem; position: sticky; top: 5rem; }
+.apply-form-card h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .25rem; }
+.aform-group { display: flex; flex-direction: column; gap: .3rem; margin-bottom: 1rem; }
+.aform-group label { font-size: .8rem; font-weight: 600; color: #2a2a3a; }
+.aform-group input, .aform-group select, .aform-group textarea { font-family: inherit; font-size: .9rem; padding: .6rem .8rem; border: 1.5px solid #e5e5f0; border-radius: 8px; outline: none; transition: border-color .12s; }
+.aform-group input:focus, .aform-group select:focus, .aform-group textarea:focus { border-color: #5b5bd6; box-shadow: 0 0 0 3px rgba(91,91,214,.1); }
+.aform-group textarea { resize: vertical; }
+.btn-full { width: 100%; text-align: center; }
+.req { color: #dc2626; }
+@media(max-width:900px) { .apply-grid { grid-template-columns: 1fr; } .apply-form-card { position: static; } .trait-grid { grid-template-columns: 1fr; } }
+</style>
+{{ end }}

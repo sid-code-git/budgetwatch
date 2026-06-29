@@ -1,80 +1,139 @@
 {{ define "main" }}
-<section class="hero">
-  <div class="container">
-    <div class="hero-eyebrow">Your tax dollars. Your right to know.</div>
-    <h1>Do you know where<br><span class="highlight">your taxes go?</span></h1>
-    <p class="hero-sub">Every year your town spends your tax money. That spending is public record — but buried in documents most people never see. We read them so you don't have to, and publish exactly what deserves a question.</p>
-    <div class="hero-actions">
-      <a href="{{ .Site.BaseURL }}reports/" class="btn-primary">See Where the Money Went</a>
-      <a href="{{ .Site.BaseURL }}map/" class="btn-secondary">Find Your Town</a>
+
+<!-- ── MASTHEAD ── -->
+<section class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-label">Public Accountability Journalism</div>
+    <h1 class="masthead-title">Do you know where<br>your taxes go?</h1>
+    <p class="masthead-sub">Every year your town spends your money. That spending is public record — buried in documents almost nobody reads. We read them, analyze every line, and publish what deserves a question.</p>
+    <div class="masthead-actions">
+      <a href="{{ .Site.BaseURL }}reports/" class="btn-primary">Read the Research</a>
+      <a href="{{ .Site.BaseURL }}apply/" class="btn-ghost">Become an Analyst</a>
     </div>
-    <div class="hero-stats">
-      <div>
-        <div class="hero-stat-num">{{ len (where .Site.RegularPages "Section" "reports") }}</div>
-        <div class="hero-stat-label">Reports published</div>
-      </div>
-      <div>
-        <div class="hero-stat-num">{{ len (where (where .Site.RegularPages "Section" "reports") ".Params.news_desert" true) }}</div>
-        <div class="hero-stat-label">News-desert towns</div>
-      </div>
-      <div>
-        <div class="hero-stat-num">5</div>
-        <div class="hero-stat-label">Checks per report</div>
-      </div>
-      <div>
-        <div class="hero-stat-num">$0</div>
-        <div class="hero-stat-label">Cost to read</div>
-      </div>
+  </div>
+  <div class="masthead-stats">
+    <div class="stat-item">
+      <div class="stat-num">{{ len (where .Site.RegularPages "Section" "reports") }}</div>
+      <div class="stat-label">Reports published</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">{{ len (where (where .Site.RegularPages "Section" "reports") ".Params.news_desert" true) }}</div>
+      <div class="stat-label">News-desert towns</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">10</div>
+      <div class="stat-label">Sections per report</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">$0</div>
+      <div class="stat-label">Cost to read</div>
     </div>
   </div>
 </section>
 
-<section class="section-latest">
-  <div class="container">
-    <div class="section-header">
-      <h2 class="section-title">Latest Reports</h2>
-      {{ if gt (len (where .Site.RegularPages "Section" "reports")) 6 }}
-      <a href="{{ .Site.BaseURL }}reports/" class="section-link">View all</a>
-      {{ end }}
+<!-- ── FEATURED RESEARCH ── -->
+<section class="research-section">
+  <div class="content-inner">
+
+    <div class="section-header-row">
+      <div>
+        <div class="section-eyebrow">Latest Research</div>
+        <h2 class="section-heading">Recent Reports</h2>
+      </div>
+      <a href="{{ .Site.BaseURL }}reports/" class="text-link">View all reports →</a>
     </div>
+
+    {{ $reports := where .Site.RegularPages "Section" "reports" }}
+    {{ if $reports }}
+
+    <!-- Featured first report -->
+    {{ with index $reports 0 }}
+    <a href="{{ .Permalink }}" class="featured-report">
+      <div class="featured-meta">
+        {{ with .Params.severity }}<span class="tag tag-{{ . }}">{{ . }} concern</span>{{ end }}
+        {{ if .Params.news_desert }}<span class="tag tag-desert">news desert</span>{{ end }}
+        <span class="tag-date">{{ .Params.fiscal_year }}</span>
+      </div>
+      <h3 class="featured-title">{{ .Title }}</h3>
+      <p class="featured-location">{{ .Params.town }}, {{ .Params.state }} · Population {{ .Params.population }}</p>
+      <p class="featured-summary">{{ .Summary | truncate 240 }}</p>
+      <span class="featured-cta">Read full report →</span>
+    </a>
+    {{ end }}
+
+    <!-- Report grid -->
+    {{ if gt (len $reports) 1 }}
     <div class="report-grid">
-      {{ range first 6 (where .Site.RegularPages "Section" "reports") }}
+      {{ range after 1 (first 7 $reports) }}
       <a href="{{ .Permalink }}" class="report-card">
-        <div class="card-top">
-          {{ with .Params.severity }}<span class="badge badge-{{ . }}">{{ . }} flags</span>{{ end }}
-          {{ if .Params.news_desert }}<span class="badge badge-desert">no local paper</span>{{ end }}
+        <div class="card-meta-row">
+          {{ with .Params.severity }}<span class="tag tag-{{ . }}">{{ . }}</span>{{ end }}
+          {{ if .Params.news_desert }}<span class="tag tag-desert">news desert</span>{{ end }}
         </div>
-        <h3>{{ .Title }}</h3>
-        <p class="card-meta">{{ .Params.town }}, {{ .Params.state }} · FY{{ .Params.fiscal_year }}</p>
-        <p class="card-summary">{{ .Summary }}</p>
-        <span class="card-read">Read report</span>
+        <h4 class="card-title">{{ .Title }}</h4>
+        <p class="card-location">{{ .Params.town }}, {{ .Params.state }} · FY{{ .Params.fiscal_year }}</p>
+        <p class="card-excerpt">{{ .Summary | truncate 120 }}</p>
+        <span class="card-link">Read →</span>
       </a>
-      {{ else }}
-      <p class="empty-state">No reports published yet. <a href="{{ .Site.BaseURL }}submit/">Submit a town</a> to get started.</p>
       {{ end }}
+    </div>
+    {{ end }}
+
+    {{ else }}
+    <div class="empty-research">
+      <p>No reports published yet.</p>
+      <a href="{{ .Site.BaseURL }}submit/" class="btn-primary">Submit a town to get started</a>
+    </div>
+    {{ end }}
+
+  </div>
+</section>
+
+<!-- ── ABOUT STRIP ── -->
+<section class="about-strip">
+  <div class="content-inner">
+    <div class="about-strip-grid">
+      <div class="about-strip-main">
+        <div class="section-eyebrow">Our Mission</div>
+        <h2 class="section-heading">Public money deserves public scrutiny.</h2>
+        <p>Budget Watch is an independent research project that analyzes municipal budgets in towns where no local newspaper exists to do it. We produce structured, cited, fact-based reports — not opinions — and publish them for free.</p>
+        <a href="{{ .Site.BaseURL }}about/" class="text-link" style="margin-top:1rem;display:inline-block">More about us →</a>
+      </div>
+      <div class="about-strip-cards">
+        <div class="method-card">
+          <div class="method-num">01</div>
+          <h4>We obtain the official budget</h4>
+          <p>Every report starts with the town's own published document — no leaks, no anonymous sources.</p>
+        </div>
+        <div class="method-card">
+          <div class="method-num">02</div>
+          <h4>We run structured analysis</h4>
+          <p>Ten sections covering everything from fund balance to pension liability to transparency scores.</p>
+        </div>
+        <div class="method-card">
+          <div class="method-num">03</div>
+          <h4>We publish questions, not verdicts</h4>
+          <p>Every flag becomes a neutral question for the public to ask — every figure is cited to its source.</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="section-mission">
-  <div class="container">
-    <div class="mission-grid">
-      <div class="mission-card">
-        <h2>Your money. Your right to know.</h2>
-        <p>The average American household pays thousands in local taxes every year. Where does it go? Most towns publish a budget — but it's a 200-page PDF filed with the town clerk that almost nobody reads. We read it for you.</p>
-        <a href="{{ .Site.BaseURL }}about/">Our full mission</a>
+<!-- ── APPLY BANNER ── -->
+<section class="apply-banner">
+  <div class="content-inner">
+    <div class="apply-banner-inner">
+      <div>
+        <h2 class="apply-banner-title">Become a Public Budget Analyst</h2>
+        <p class="apply-banner-sub">We're looking for detail-oriented researchers to help expand our coverage. No finance degree required — just curiosity and a commitment to citing your sources.</p>
       </div>
-      <div class="mission-card">
-        <h2>How it works</h2>
-        <ol>
-          <li>We obtain the official published budget document.</li>
-          <li>We run five quantitative checks against prior years and peer towns.</li>
-          <li>Every flag becomes a <em>question to raise</em> — never an accusation.</li>
-          <li>Every figure is cited to the source page.</li>
-        </ol>
-        <a href="{{ .Site.BaseURL }}methodology/">Read the methodology</a>
-      </div>
+      <a href="{{ .Site.BaseURL }}apply/" class="btn-primary btn-lg">Apply now →</a>
     </div>
   </div>
 </section>
+
 {{ end }}
