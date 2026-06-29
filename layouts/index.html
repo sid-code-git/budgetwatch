@@ -123,6 +123,41 @@
   </div>
 </section>
 
+<!-- ── POLICY BRIEFS ── -->
+<section class="research-section" style="background:var(--surface-2)">
+  <div class="content-inner">
+    <div class="section-header-row">
+      <div>
+        <div class="section-eyebrow">Economic Policy Research</div>
+        <h2 class="section-heading">Policy Briefs</h2>
+      </div>
+      <a href="{{ .Site.BaseURL }}briefs/" class="text-link">View all briefs →</a>
+    </div>
+
+    {{ $briefs := where .Site.RegularPages "Section" "briefs" }}
+    {{ if $briefs }}
+    <div class="report-grid">
+      {{ range first 3 $briefs }}
+      <a href="{{ .Permalink }}" class="report-card">
+        <div class="card-meta-row">
+          {{ with .Params.topic }}<span class="brief-topic">{{ . }}</span>{{ end }}
+          {{ with .Params.date }}<span class="tag-date">{{ .Format "Jan 2006" }}</span>{{ end }}
+        </div>
+        <h4 class="card-title">{{ .Title }}</h4>
+        <p class="card-excerpt">{{ .Summary | truncate 130 }}</p>
+        <span class="card-link">Read brief →</span>
+      </a>
+      {{ end }}
+    </div>
+    {{ else }}
+    <div class="apply-banner-inner" style="text-align:center;justify-content:center;flex-direction:column;gap:1rem">
+      <p style="color:var(--ink-3);font-size:.95rem">Policy briefs coming soon — analysis of the economic forces shaping local government across America.</p>
+      <a href="{{ .Site.BaseURL }}briefs/" class="btn-ghost">Explore topics →</a>
+    </div>
+    {{ end }}
+  </div>
+</section>
+
 <!-- ── APPLY BANNER ── -->
 <section class="apply-banner">
   <div class="content-inner">

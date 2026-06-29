@@ -1,0 +1,128 @@
+{{ define "main" }}
+<div class="briefs-list-page">
+
+  <div class="section-masthead">
+    <div class="content-inner">
+      <div class="masthead-label">Economic Policy Research</div>
+      <h1>Policy Briefs</h1>
+      <p class="section-desc">Analysis of the economic forces shaping local government finances — property tax law, pension reform, state aid formulas, shared services, and more. Every brief is independent, cited, and free to read.</p>
+    </div>
+  </div>
+
+  <div class="content-inner briefs-body">
+
+    {{ $briefs := where .Site.RegularPages "Section" "briefs" }}
+
+    {{ if $briefs }}
+
+    {{ with index $briefs 0 }}
+    <a href="{{ .Permalink }}" class="featured-brief">
+      <div class="brief-eyebrow">
+        {{ with .Params.topic }}<span class="brief-topic">{{ . }}</span>{{ end }}
+        {{ with .Params.date }}<span class="brief-date">{{ .Format "January 2006" }}</span>{{ end }}
+      </div>
+      <h2 class="featured-brief-title">{{ .Title }}</h2>
+      <p class="featured-brief-summary">{{ .Summary | truncate 280 }}</p>
+      <span class="brief-cta">Read brief →</span>
+    </a>
+    {{ end }}
+
+    {{ if gt (len $briefs) 1 }}
+    <div class="briefs-grid">
+      {{ range after 1 $briefs }}
+      <a href="{{ .Permalink }}" class="brief-card">
+        <div class="brief-card-top">
+          {{ with .Params.topic }}<span class="brief-topic">{{ . }}</span>{{ end }}
+          {{ with .Params.date }}<span class="brief-date">{{ .Format "Jan 2006" }}</span>{{ end }}
+        </div>
+        <h3 class="brief-card-title">{{ .Title }}</h3>
+        <p class="brief-card-summary">{{ .Summary | truncate 160 }}</p>
+        <span class="brief-read">Read →</span>
+      </a>
+      {{ end }}
+    </div>
+    {{ end }}
+
+    {{ else }}
+    <div class="empty-briefs">
+      <p>No briefs published yet. The first brief is coming soon.</p>
+    </div>
+    {{ end }}
+
+    <!-- Topic index -->
+    <div class="topics-section">
+      <h2 class="topics-title">Topics we cover</h2>
+      <div class="topics-grid">
+        <div class="topic-card">
+          <div class="topic-icon">🏛️</div>
+          <h4>Property Tax Policy</h4>
+          <p>How property tax caps, exemptions, and assessments shape local revenue and housing affordability.</p>
+        </div>
+        <div class="topic-card">
+          <div class="topic-icon">📉</div>
+          <h4>Municipal Fiscal Stress</h4>
+          <p>Structural deficits, fund balance erosion, and the warning signs of a town heading toward insolvency.</p>
+        </div>
+        <div class="topic-card">
+          <div class="topic-icon">👴</div>
+          <h4>Pension & OPEB Reform</h4>
+          <p>The unfunded liability crisis in public employee retirement systems and its impact on local budgets.</p>
+        </div>
+        <div class="topic-card">
+          <div class="topic-icon">🤝</div>
+          <h4>Shared Services</h4>
+          <p>How small governments can consolidate services — and what stops them from doing so.</p>
+        </div>
+        <div class="topic-card">
+          <div class="topic-icon">📊</div>
+          <h4>State Aid & Formulas</h4>
+          <p>How state governments distribute aid to municipalities and who gets left behind.</p>
+        </div>
+        <div class="topic-card">
+          <div class="topic-icon">🏙️</div>
+          <h4>Economic Development</h4>
+          <p>Tax incentives, TIF districts, and whether economic development subsidies actually pay off.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.section-masthead { background: var(--ink); color: white; padding: 4.5rem 0 3.5rem; margin-bottom: 3rem; }
+.section-masthead h1 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; letter-spacing: -.04em; margin: .5rem 0 1rem; }
+.section-desc { font-size: 1rem; color: rgba(255,255,255,.6); line-height: 1.7; max-width: 600px; }
+.briefs-body { padding-bottom: 5rem; }
+
+.featured-brief { display: block; border: 1px solid var(--border); border-radius: var(--r); padding: 2.25rem 2.5rem; margin-bottom: 1.5rem; text-decoration: none; color: var(--ink); transition: border-color .15s, box-shadow .15s; }
+.featured-brief:hover { border-color: var(--accent); box-shadow: 0 4px 24px rgba(91,91,214,.1); opacity: 1; color: var(--ink); }
+.brief-eyebrow { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.brief-topic { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); background: var(--accent-glow); border: 1px solid rgba(91,91,214,.2); padding: .2rem .6rem; border-radius: 4px; }
+.brief-date { font-size: .75rem; color: var(--ink-3); font-family: var(--font-mono); }
+.featured-brief-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.2; margin-bottom: .75rem; }
+.featured-brief-summary { font-size: .95rem; color: var(--ink-2); line-height: 1.65; max-width: 680px; margin-bottom: 1rem; }
+.brief-cta { font-size: .84rem; font-weight: 700; color: var(--accent); }
+
+.briefs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: var(--border); margin-bottom: 3rem; }
+.brief-card { display: flex; flex-direction: column; background: var(--surface); padding: 1.5rem; text-decoration: none; color: var(--ink); transition: background .12s; }
+.brief-card:hover { background: var(--surface-2); opacity: 1; color: var(--ink); }
+.brief-card-top { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin-bottom: .85rem; }
+.brief-card-title { font-size: .97rem; font-weight: 700; letter-spacing: -.015em; line-height: 1.3; margin-bottom: .5rem; }
+.brief-card-summary { font-size: .83rem; color: var(--ink-2); line-height: 1.55; flex: 1; }
+.brief-read { font-size: .8rem; font-weight: 700; color: var(--accent); margin-top: .85rem; }
+
+.empty-briefs { text-align: center; padding: 4rem 0 2rem; color: var(--ink-3); }
+
+.topics-section { border-top: 1px solid var(--border); padding-top: 3rem; margin-top: 1rem; }
+.topics-title { font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: 1.5rem; }
+.topics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: var(--border); }
+.topic-card { background: var(--surface); padding: 1.5rem; }
+.topic-icon { font-size: 1.4rem; margin-bottom: .6rem; }
+.topic-card h4 { font-size: .9rem; font-weight: 700; margin-bottom: .35rem; }
+.topic-card p { font-size: .82rem; color: var(--ink-3); line-height: 1.55; margin: 0; }
+
+@media(max-width:900px) { .briefs-grid, .topics-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width:600px) { .briefs-grid, .topics-grid { grid-template-columns: 1fr; } .featured-brief { padding: 1.5rem; } .featured-brief-title { font-size: 1.25rem; } }
+</style>
+{{ end }}

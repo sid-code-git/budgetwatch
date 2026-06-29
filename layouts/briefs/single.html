@@ -1,0 +1,125 @@
+{{ define "main" }}
+<div class="brief-page">
+  <div class="content-inner">
+    <div class="brief-layout">
+
+      <!-- Main content -->
+      <article class="brief-article">
+        <div class="brief-header">
+          <div class="brief-eyebrow">
+            {{ with .Params.topic }}<span class="brief-topic">{{ . }}</span>{{ end }}
+            {{ with .Params.date }}<span class="brief-date">{{ .Format "January 2, 2006" }}</span>{{ end }}
+          </div>
+          <h1>{{ .Title }}</h1>
+          {{ with .Params.subtitle }}<p class="brief-subtitle">{{ . }}</p>{{ end }}
+          <div class="brief-byline">
+            {{ with .Params.author }}<span>By {{ . }}</span>{{ end }}
+            {{ with .Params.author }}{{ with $.Params.affiliation }} · <span>{{ . }}</span>{{ end }}{{ end }}
+          </div>
+          {{ with .Params.summary }}
+          <div class="brief-abstract">
+            <div class="abstract-label">Abstract</div>
+            <p>{{ . }}</p>
+          </div>
+          {{ end }}
+        </div>
+
+        <div class="prose brief-prose">
+          {{ .Content }}
+        </div>
+
+        <div class="brief-footer">
+          <div class="brief-footer-inner">
+            {{ with .Params.source_url }}<a href="{{ . }}" target="_blank" rel="noopener" class="brief-source-link">View primary source →</a>{{ end }}
+            <p>Budget Watch publishes independent, non-partisan policy analysis. All figures are cited to primary sources. Views expressed are those of the author.</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- Sidebar -->
+      <aside class="brief-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-label">Key Facts</div>
+          {{ with .Params.key_facts }}
+          <ul class="key-facts-list">
+            {{ range . }}
+            <li>{{ . }}</li>
+            {{ end }}
+          </ul>
+          {{ else }}
+          <p class="sidebar-empty">No key facts listed.</p>
+          {{ end }}
+        </div>
+
+        {{ with .Params.topic }}
+        <div class="sidebar-card">
+          <div class="sidebar-label">Topic</div>
+          <span class="brief-topic">{{ . }}</span>
+        </div>
+        {{ end }}
+
+        {{ with .Params.related_reports }}
+        <div class="sidebar-card">
+          <div class="sidebar-label">Related Reports</div>
+          <ul class="sidebar-links">
+            {{ range . }}
+            <li><a href="{{ $.Site.BaseURL }}reports/{{ .slug }}/">{{ .title }}</a></li>
+            {{ end }}
+          </ul>
+        </div>
+        {{ end }}
+
+        <div class="sidebar-card sidebar-cta">
+          <div class="sidebar-label">Get Involved</div>
+          <p>Want to write a policy brief or contribute research?</p>
+          <a href="{{ .Site.BaseURL }}apply/" class="btn-primary" style="display:block;text-align:center;margin-top:.75rem">Apply as an analyst</a>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.brief-page { padding: 3rem 0 5rem; }
+.brief-layout { display: grid; grid-template-columns: 1fr 280px; gap: 4rem; align-items: start; }
+
+.brief-header { margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+.brief-header h1 { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; letter-spacing: -.04em; line-height: 1.15; margin: .75rem 0 .5rem; }
+.brief-subtitle { font-size: 1.05rem; color: var(--ink-2); line-height: 1.6; margin-bottom: .75rem; }
+.brief-byline { font-size: .82rem; color: var(--ink-3); margin-bottom: 1.25rem; }
+.brief-abstract { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 1.1rem 1.25rem; margin-top: 1.25rem; }
+.abstract-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); margin-bottom: .4rem; }
+.brief-abstract p { font-size: .9rem; color: var(--ink-2); line-height: 1.65; margin: 0; font-style: italic; }
+
+.brief-prose { max-width: 100%; }
+.brief-prose h2 { font-size: 1.15rem; font-weight: 700; letter-spacing: -.02em; margin: 2.25rem 0 .65rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+.brief-prose h3 { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 .4rem; color: var(--ink); }
+.brief-prose p { font-size: .95rem; color: var(--ink-2); line-height: 1.75; margin-bottom: 1rem; }
+.brief-prose ul, .brief-prose ol { padding-left: 1.4rem; margin-bottom: 1rem; }
+.brief-prose li { font-size: .95rem; color: var(--ink-2); line-height: 1.65; margin-bottom: .4rem; }
+.brief-prose strong { font-weight: 700; color: var(--ink); }
+.brief-prose blockquote { border-left: 3px solid var(--accent); padding: .75rem 1.25rem; margin: 1.5rem 0; background: var(--accent-glow); border-radius: 0 var(--r-sm) var(--r-sm) 0; color: var(--ink-2); font-style: italic; }
+.brief-prose table { width: 100%; border-collapse: collapse; font-size: .85rem; margin: 1.5rem 0; }
+.brief-prose th { text-align: left; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); padding: .5rem .75rem; border-bottom: 2px solid var(--border); }
+.brief-prose td { padding: .55rem .75rem; border-bottom: 1px solid var(--border); color: var(--ink-2); }
+
+.brief-footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.brief-footer-inner p { font-size: .8rem; color: var(--ink-3); line-height: 1.6; margin: .5rem 0 0; }
+.brief-source-link { font-size: .84rem; font-weight: 700; color: var(--accent); }
+
+/* Sidebar */
+.brief-sidebar { position: sticky; top: 5rem; display: flex; flex-direction: column; gap: 1rem; }
+.sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1.25rem; }
+.sidebar-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--ink-3); margin-bottom: .75rem; }
+.key-facts-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: .6rem; }
+.key-facts-list li { font-size: .83rem; color: var(--ink-2); line-height: 1.5; padding-left: 1rem; position: relative; }
+.key-facts-list li::before { content: "→"; position: absolute; left: 0; color: var(--accent); font-weight: 700; font-size: .75rem; }
+.sidebar-empty { font-size: .82rem; color: var(--ink-3); font-style: italic; }
+.sidebar-links { list-style: none; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.sidebar-links a { font-size: .83rem; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.sidebar-cta p { font-size: .83rem; color: var(--ink-2); line-height: 1.55; }
+
+@media(max-width:900px) { .brief-layout { grid-template-columns: 1fr; } .brief-sidebar { position: static; } }
+</style>
+{{ end }}
