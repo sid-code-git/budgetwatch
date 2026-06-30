@@ -9,6 +9,7 @@ from datetime import datetime
 
 BASE = os.path.dirname(__file__)
 REPORTS = os.path.join(BASE, "content", "reports")
+BRIEFS  = os.path.join(BASE, "content", "briefs")
 CONFIG_FILE = os.path.join(BASE, ".admin_config.json")
 PORT = 8787
 
@@ -60,6 +61,54 @@ def slugify(text):
     text = re.sub(r"[^\w\s-]", "", text)
     text = re.sub(r"[\s_-]+", "-", text)
     return text
+
+def list_briefs():
+    if not os.path.exists(BRIEFS):
+        return []
+    files = [f for f in os.listdir(BRIEFS) if f.endswith(".md") and f != "_index.md"]
+    out = []
+    for f in sorted(files, reverse=True):
+        path = os.path.join(BRIEFS, f)
+        meta = parse_frontmatter(path)
+        meta["slug"] = f.replace(".md", "")
+        out.append(meta)
+    return out
+
+def read_brief(slug):
+    path = os.path.join(BRIEFS, slug + ".md")
+    try:
+        with open(path) as fh:
+            return fh.read()
+    except Exception:
+        return ""
+
+def write_brief(slug, content):
+    os.makedirs(BRIEFS, exist_ok=True)
+    path = os.path.join(BRIEFS, slug + ".md")
+    with open(path, "w") as fh:
+        fh.write(content)
+    return path
+
+def build_brief_md(d):
+    draft = "false" if d.get("publish") == "true" else "true"
+    # key_facts as YAML list
+    facts = [f.strip() for f in d.get("key_facts", "").split("\n") if f.strip()]
+    facts_yaml = "".join(f'\n  - "{esc(f)}"' for f in facts) if facts else ""
+
+    return f"""---
+title: "{d.get('title', '')}"
+subtitle: "{d.get('subtitle', '')}"
+topic: "{d.get('topic', '')}"
+date: {d.get('date', datetime.now().strftime('%Y-%m-%d'))}
+author: "{d.get('author', '')}"
+summary: "{d.get('summary', '').replace(chr(34), chr(39))}"
+key_facts:{facts_yaml if facts_yaml else ' []'}
+source_url: "{d.get('source_url', '')}"
+draft: {draft}
+---
+
+{d.get('body', '')}
+"""
 
 def list_reports():
     if not os.path.exists(REPORTS):
@@ -351,7 +400,7 @@ STYLE = """
 # ── page shell ─────────────────────────────────────────────────────────────────
 
 def page(title, body, active="reports"):
-    nav_items = [("reports", "/", "Reports"), ("new", "/new", "+ New Report"), ("submissions", "/submissions", "Submissions")]
+    nav_items = [("reports", "/", "Reports"), ("new", "/new", "+ New Report"), ("briefs", "/briefs", "Policy Briefs"), ("new-brief", "/briefs/new", "+ New Brief"), ("submissions", "/submissions", "Submissions")]
     nav = "".join(
         f'<a href="{href}" style="color:{"white" if active==k else "rgba(255,255,255,.5)"};margin-left:1.5rem;text-decoration:none;font-size:.85rem;font-weight:{"700" if active==k else "400"}">{label}</a>'
         for k, href, label in nav_items
@@ -420,6 +469,73 @@ TREND_TPL = """<div class="trend-block" id="trend-{n}">
     <div class=form-group><label>Fund Balance</label><input type=text name=trend_balance placeholder="$620K"></div>
   </div>
 </div>"""
+
+# ── new brief form ─────────────────────────────────────────────────────────────
+
+TOPICS = ["Property Tax Policy","Municipal Fiscal Stress","Pension & OPEB Reform","Shared Services","State Aid & Formulas","Economic Development","Infrastructure Finance","Public Safety Policy","Education Finance","Housing & Zoning","Other"]
+
+def render_brief_form(alert=""):
+    year = datetime.now().year
+    topic_opts = "".join(f'<option value="{t}">{t}</option>' for t in TOPICS)
+    return f"""
+<h2>New Policy Brief</h2>
+{alert}
+<form method=POST action=/briefs/save>
+
+  <div class=card>
+    <div class=card-header><span class=card-num>Meta</span><div><div class=card-title>Brief Info</div></div></div>
+    <div class=form-grid>
+      <div class="form-group full"><label>Title <span style="color:#dc2626">*</span></label><input type=text name=title required placeholder="Property Tax Caps Are Starving Small Towns"></div>
+      <div class="form-group full"><label>Subtitle</label><input type=text name=subtitle placeholder="How state-imposed levy limits are accelerating fiscal stress"></div>
+      <div class=form-group>
+        <label>Topic</label>
+        <select name=topic>{topic_opts}</select>
+      </div>
+      <div class=form-group>
+        <label>Date</label>
+        <input type=date name=date value="{datetime.now().strftime('%Y-%m-%d')}">
+      </div>
+      <div class=form-group>
+        <label>Author</label>
+        <input type=text name=author placeholder="Budget Watch Research" value="Budget Watch Research">
+      </div>
+      <div class=form-group>
+        <label>Primary source URL</label>
+        <input type=url name=source_url placeholder="https://...">
+      </div>
+    </div>
+  </div>
+
+  <div class=card>
+    <div class=card-header><span class=card-num>Abstract</span><div><div class=card-title>Summary & Key Facts</div><div class=card-subtitle>Shown in the sidebar and on the briefs list page</div></div></div>
+    <div class=form-group>
+      <label>Abstract / Summary <span style="color:#dc2626">*</span></label>
+      <textarea name=summary rows=4 required placeholder="2–3 sentence summary of the brief's argument and findings."></textarea>
+    </div>
+    <div class=form-group style="margin-top:.75rem">
+      <label>Key facts</label>
+      <textarea name=key_facts rows=5 placeholder="One fact per line. e.g.&#10;38 states have property tax levy limits&#10;Average cap is 2–3% annual growth&#10;Towns near levy limits have fund balances 40% lower"></textarea>
+      <p class=hint>One per line — these appear as bullet points in the sidebar.</p>
+    </div>
+  </div>
+
+  <div class=card>
+    <div class=card-header><span class=card-num>Body</span><div><div class=card-title>Brief Content</div><div class=card-subtitle>Markdown supported. Use ## for section headings.</div></div></div>
+    <div class=form-group>
+      <textarea name=body rows=30 style="font-family:monospace;font-size:.82rem" placeholder="## The Problem&#10;&#10;Start writing here...&#10;&#10;## What the Data Shows&#10;&#10;## Policy Recommendations&#10;&#10;## Conclusion"></textarea>
+    </div>
+  </div>
+
+  <div class=card>
+    <div class=form-group><label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type=checkbox name=publish value=true> Publish immediately (uncheck to save as draft)</label></div>
+    <div style="margin-top:.75rem"><label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type=checkbox name=push value=true checked> Push to GitHub now</label></div>
+  </div>
+
+  <div class=actions-bar>
+    <button type=submit class="btn btn-green">Save Brief</button>
+    <a href=/briefs class="btn btn-outline">Cancel</a>
+  </div>
+</form>"""
 
 # ── new report form ────────────────────────────────────────────────────────────
 
@@ -638,6 +754,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.handle_edit(path[6:])
         elif path.startswith("/delete/"):
             self.handle_delete(path[8:])
+        elif path == "/briefs":
+            self.handle_briefs_list()
+        elif path == "/briefs/new":
+            self.send_html(page("New Brief", render_brief_form(), "new-brief"))
+        elif path.startswith("/briefs/edit/"):
+            self.handle_brief_edit(path[13:])
+        elif path.startswith("/briefs/delete/"):
+            self.handle_brief_delete(path[15:])
         elif path == "/submissions":
             self.handle_submissions()
         elif path == "/submissions/setup":
@@ -656,10 +780,98 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.handle_save(data)
         elif path.startswith("/update/"):
             self.handle_update(path[8:], data)
+        elif path == "/briefs/save":
+            self.handle_brief_save(data)
+        elif path.startswith("/briefs/update/"):
+            self.handle_brief_update(path[15:], data)
         elif path == "/submissions/setup":
             self.handle_submissions_setup_save(data)
         else:
             self.send_html("<h1>Not found</h1>", 404)
+
+    def handle_briefs_list(self):
+        briefs = list_briefs()
+        if not briefs:
+            rows = '<p class=empty>No briefs yet. <a href="/briefs/new">Write your first policy brief →</a></p>'
+        else:
+            rows = ""
+            for b in briefs:
+                draft = b.get("draft", "true") == "true"
+                rows += f"""
+<div class=card>
+  <div class=report-row>
+    <div>
+      <div class=report-title>{esc(b.get('title', b['slug']))}</div>
+      <div class=report-meta>{esc(b.get('topic',''))} · {esc(b.get('date',''))} · by {esc(b.get('author',''))}</div>
+    </div>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
+      {"<span class='badge badge-draft'>draft</span>" if draft else "<span class='badge badge-low'>published</span>"}
+      <a href="/briefs/edit/{b['slug']}" class="btn btn-outline btn-sm">Edit</a>
+      <a href="/briefs/delete/{b['slug']}" class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="return confirm('Delete this brief?')">Delete</a>
+    </div>
+  </div>
+</div>"""
+        body = f"""
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+  <h2 style="margin:0">Policy Briefs</h2>
+  <a href="/briefs/new" class="btn btn-primary">+ New Brief</a>
+</div>
+{rows}"""
+        self.send_html(page("Policy Briefs", body, "briefs"))
+
+    def handle_brief_edit(self, slug):
+        content = read_brief(slug)
+        safe = esc(content)
+        body = f"""
+<h2>Edit Brief</h2>
+<p style="color:#6b6b80;font-size:.88rem;margin-bottom:1.5rem">Editing <code>{esc(slug)}.md</code> — raw markdown.</p>
+<form method=POST action="/briefs/update/{esc(slug)}">
+  <div class=card>
+    <div class=form-group>
+      <label>Brief content (Markdown)</label>
+      <textarea name=content rows=35 style="font-family:monospace;font-size:.8rem">{safe}</textarea>
+    </div>
+  </div>
+  <div class=form-group style="margin-bottom:1rem">
+    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
+      <input type=checkbox name=push value=true checked> Push to GitHub after saving
+    </label>
+  </div>
+  <div class=actions-bar>
+    <button type=submit class="btn btn-green">Save Changes</button>
+    <a href="/briefs" class="btn btn-outline">Cancel</a>
+  </div>
+</form>"""
+        self.send_html(page("Edit Brief", body, "briefs"))
+
+    def handle_brief_delete(self, slug):
+        path = os.path.join(BRIEFS, slug + ".md")
+        if os.path.exists(path):
+            os.remove(path)
+            subprocess.run(["git", "add", "-A"], cwd=BASE)
+            subprocess.run(["git", "commit", "-m", f"Delete brief: {slug}"], cwd=BASE)
+            subprocess.run(["git", "push"], cwd=BASE)
+        self.redirect("/briefs")
+
+    def handle_brief_save(self, data):
+        title = data.get("title", "untitled")
+        slug = slugify(title)
+        content = build_brief_md(data)
+        path = write_brief(slug, content)
+        alert = ""
+        if data.get("push") == "true":
+            ok, err = git_push(path, f"Add brief: {title}")
+            alert = '<div class="alert alert-green">✓ Brief saved and pushed. Live in ~2 min.</div>' if ok else f'<div class="alert alert-red">Saved locally but push failed: {esc(err)}</div>'
+        else:
+            alert = '<div class="alert alert-green">✓ Brief saved locally.</div>'
+        self.send_html(page("New Brief", render_brief_form(alert=alert), "new-brief"))
+
+    def handle_brief_update(self, slug, data):
+        content = data.get("content", "")
+        path = write_brief(slug, content)
+        if data.get("push") == "true":
+            git_push(path, f"Update brief: {slug}")
+        self.redirect("/briefs")
 
     def handle_submissions(self):
         cfg = load_config()
