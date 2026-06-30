@@ -14,17 +14,17 @@ draft: false
 
 ## I. Executive Summary
 
-Saratoga is an affluent, built-out Silicon Valley contract city of ~30,300 whose budget is increasingly dominated by its Santa Clara County Sheriff law-enforcement contract (~$9M this fiscal year). The County is seeking a 33% increase (~+$3M) for FY2026-27, already forcing ~$1.5M in Capital Improvement Program cuts. City budget messages acknowledge a structural deficit that persists even in good economic years, bridged with cost-recovery fee increases and reserve draws.
+Saratoga is an affluent, built-out Silicon Valley contract city of about 30,300 whose budget is increasingly dominated by its Santa Clara County Sheriff law-enforcement contract (about $9M this fiscal year). The County is seeking a 33% increase (about +$3M) for FY2026-27, already forcing about $1.5M in Capital Improvement Program cuts. City budget messages acknowledge a structural deficit that persists even in good economic years, bridged with cost-recovery fee increases and reserve draws.
 
-**Total Budget:** Not found in available sources (locked in FY2024-25 Budget Book PDF; verify) &nbsp;|&nbsp; **Per Capita:** Not found in available sources &nbsp;|&nbsp; **Fund Balance:** Not found in available sources; designated reserves ~$3.5M ($1M Working Capital + $2.5M Fiscal Stabilization) &nbsp;|&nbsp; **Debt Load:** Not found in available sources (historically little/no GO bonded debt; verify in ACFR)
+**Total Budget:** Not found in available sources (locked in FY2024-25 Budget Book PDF; verify) &nbsp;|&nbsp; **Per Capita:** Not found in available sources &nbsp;|&nbsp; **Fund Balance:** Not found in available sources; designated reserves about $3.5M ($1M Working Capital + $2.5M Fiscal Stabilization) &nbsp;|&nbsp; **Debt Load:** Not found in available sources (historically little/no GO bonded debt; verify in ACFR)
 
 ## II. Socioeconomic Context & Peer Comparison
 
-Among the wealthiest CA cities (DataUSA/ACS 2024): median household income $250,001 (top-coded, +3.59% YoY); poverty 3.26%; unemployment ~4% (below CA avg); median property value ~$2.0M; homeownership 86.4%; median age 51.7; 46.3% foreign-born, Asian (NH) largest group. Inelastic, Prop-13-constrained, residential tax base.
+Among the wealthiest CA cities (DataUSA/ACS 2024): median household income $250,001 (top-coded, +3.59% YoY); poverty 3.26%; unemployment about 4% (below CA avg); median property value about $2.0M; homeownership 86.4%; median age 51.7; 46.3% foreign-born, Asian (NH) largest group. Inelastic, Prop-13-constrained, residential tax base.
 
 ### Population & Economic Trends
 
-Population 30,319 (2024); stable, older, built-out city. Employed residents 13,473 (-1.2% YoY). Peers by size/profile: Los Gatos (~33k, adjacent), Cupertino (~60k), Los Altos/Los Altos Hills. Cupertino, Los Altos Hills, and Saratoga all use the same Sheriff contract and face identical cost pressure.
+Population 30,319 (2024); stable, older, built-out city. Employed residents 13,473 (-1.2% YoY). Peers by size/profile: Los Gatos (about 33k, adjacent), Cupertino (about 60k), Los Altos/Los Altos Hills. Cupertino, Los Altos Hills, and Saratoga all use the same Sheriff contract and face identical cost pressure.
 
 ### Peer Comparison
 
@@ -38,7 +38,7 @@ Primarily property tax plus charges for services and other taxes/fees. FY2024-25
 
 ### Where the Money Goes
 
-Largest expenditure is the Sheriff protective-services contract: ~$9M in FY ending June 30, 2026. Remaining line-item detail: Not found in available sources (build from budget book PDF).
+Largest expenditure is the Sheriff protective-services contract: about $9M in FY ending June 30, 2026. Remaining line-item detail: Not found in available sources (build from budget book PDF).
 
 ### 5-Year Trend
 
@@ -64,7 +64,7 @@ City does not run schools (Saratoga Union and Los Gatos-Saratoga Union High dist
 
 ### B. Facilities, Infrastructure & Parks
 
-Capital Improvement Program being cut ~$1.5M to absorb public-safety cost increases — the most concrete near-term community impact.
+Capital Improvement Program being cut about $1.5M to absorb public-safety cost increases — the most concrete near-term community impact.
 
 ### C. Public Safety Staffing & Allocation
 
