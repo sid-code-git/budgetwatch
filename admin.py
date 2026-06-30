@@ -11,9 +11,28 @@ BASE = os.path.dirname(__file__)
 REPORTS = os.path.join(BASE, "content", "reports")
 BRIEFS  = os.path.join(BASE, "content", "briefs")
 CONFIG_FILE = os.path.join(BASE, ".admin_config.json")
+SITE_CONFIG_FILE = os.path.join(BASE, "data", "site_config.yaml")
 PORT = 8787
 
 # ── config (stores Netlify token) ──────────────────────────────────────────────
+
+def load_site_config():
+    try:
+        with open(SITE_CONFIG_FILE) as f:
+            cfg = {}
+            for line in f:
+                if ":" in line:
+                    k, _, v = line.partition(":")
+                    cfg[k.strip()] = v.strip().strip('"')
+            return cfg
+    except Exception:
+        return {}
+
+def save_site_config(cfg):
+    os.makedirs(os.path.dirname(SITE_CONFIG_FILE), exist_ok=True)
+    with open(SITE_CONFIG_FILE, "w") as f:
+        for k, v in cfg.items():
+            f.write(f'{k}: "{v}"\n')
 
 def load_config():
     try:
@@ -406,7 +425,7 @@ STYLE = """
 # ── page shell ─────────────────────────────────────────────────────────────────
 
 def page(title, body, active="reports"):
-    nav_items = [("reports", "/", "Reports"), ("new", "/new", "+ New Report"), ("briefs", "/briefs", "Policy Briefs"), ("new-brief", "/briefs/new", "+ New Brief"), ("submissions", "/submissions", "Submissions"), ("applications", "/applications", "Applications")]
+    nav_items = [("reports", "/", "Reports"), ("new", "/new", "+ New Report"), ("briefs", "/briefs", "Policy Briefs"), ("new-brief", "/briefs/new", "+ New Brief"), ("submissions", "/submissions", "Submissions"), ("applications", "/applications", "Applications"), ("settings", "/settings", "Settings")]
     nav = "".join(
         f'<a href="{href}" style="color:{"white" if active==k else "rgba(255,255,255,.5)"};margin-left:1.5rem;text-decoration:none;font-size:.85rem;font-weight:{"700" if active==k else "400"}">{label}</a>'
         for k, href, label in nav_items
@@ -770,6 +789,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.handle_brief_delete(path[15:])
         elif path == "/applications":
             self.handle_applications()
+        elif path == "/settings":
+            self.handle_settings()
         elif path == "/submissions":
             self.handle_submissions()
         elif path == "/submissions/setup":
@@ -794,6 +815,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.handle_brief_update(path[15:], data)
         elif path == "/submissions/setup":
             self.handle_submissions_setup_save(data)
+        elif path == "/settings":
+            self.handle_settings_save(data)
         else:
             self.send_html("<h1>Not found</h1>", 404)
 
@@ -880,6 +903,31 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if data.get("push") == "true":
             git_push(path, f"Update brief: {slug}")
         self.redirect("/briefs")
+
+    def handle_settings(self, alert=""):
+        cfg = load_site_config()
+        apply_url = esc(cfg.get("apply_url", ""))
+        alert_html = f'<div class="alert alert-green">{alert}</div>' if alert else ""
+        body = f"""
+        <h2 style="margin-bottom:1.5rem">Site Settings</h2>
+        {alert_html}
+        <form method=POST action="/settings" style="max-width:600px">
+          <div class=form-group>
+            <label>Apply Page — "Join Us" button link</label>
+            <input type=url name=apply_url value="{apply_url}" placeholder="https://forms.google.com/..." style="width:100%">
+            <p style="font-size:.8rem;color:#888;margin-top:.3rem">Paste the URL where applicants should apply (Google Form, Typeform, Airtable, etc.). Leave blank to show a "coming soon" placeholder.</p>
+          </div>
+          <button type=submit class=btn>Save Settings</button>
+        </form>
+        """
+        self.send_html(page("Settings", body, "settings"))
+
+    def handle_settings_save(self, data):
+        cfg = load_site_config()
+        cfg["apply_url"] = data.get("apply_url", "").strip()
+        save_site_config(cfg)
+        git_push(SITE_CONFIG_FILE, "Update site settings: apply URL")
+        self.handle_settings(alert="Settings saved and pushed to GitHub ✓")
 
     def handle_applications(self):
         cfg = load_config()

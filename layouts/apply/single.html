@@ -67,70 +67,20 @@
 
       </div>
 
-      <!-- RIGHT: Application form -->
+      <!-- RIGHT: Join Us card -->
       <div class="apply-right">
         <div class="apply-form-card">
-          <h2>Apply</h2>
-          <p style="font-size:.9rem;color:#6b6b80;margin-bottom:1.5rem">Takes about 5 minutes. We review every application.</p>
-
-          <form name="analyst-application" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" action="{{ .Site.BaseURL }}apply-thanks/">
-            <input type="hidden" name="form-name" value="analyst-application">
-            <p style="display:none"><label>Skip: <input name="bot-field"></label></p>
-
-            <div class="aform-group">
-              <label>Full name <span class="req">*</span></label>
-              <input type="text" name="name" required placeholder="Jane Smith">
-            </div>
-
-            <div class="aform-group">
-              <label>Email <span class="req">*</span></label>
-              <input type="email" name="email" required placeholder="jane@example.com">
-            </div>
-
-            <div class="aform-group">
-              <label>Where are you based? <span class="req">*</span></label>
-              <input type="text" name="location" required placeholder="e.g. Austin, TX">
-            </div>
-
-            <div class="aform-group">
-              <label>Current occupation or school</label>
-              <input type="text" name="occupation" placeholder="e.g. college student, journalist, accountant">
-            </div>
-
-            <div class="aform-group">
-              <label>Why do you want to do this work? <span class="req">*</span></label>
-              <textarea name="motivation" rows="4" required placeholder="What draws you to public budget analysis? Is there a specific town or issue that motivated you?"></textarea>
-            </div>
-
-            <div class="aform-group">
-              <label>Have you ever read a municipal budget, financial report, or audit? <span class="req">*</span></label>
-              <select name="experience" required>
-                <option value="">— select —</option>
-                <option value="yes-extensively">Yes, extensively</option>
-                <option value="yes-some">Yes, a few times</option>
-                <option value="no-but-comfortable">No, but I'm comfortable with financial documents</option>
-                <option value="no-new">No — this would be new for me</option>
-              </select>
-            </div>
-
-            <div class="aform-group">
-              <label>Which town would you want to cover first — and why?</label>
-              <textarea name="town_interest" rows="3" placeholder="e.g. My hometown of Harlan, Iowa — I grew up there and noticed the roads kept getting worse while the admin budget kept growing."></textarea>
-            </div>
-
-            <div class="aform-group">
-              <label>Resume / CV <span class="req">*</span></label>
-              <textarea name="resume" rows="8" required placeholder="Paste your resume or CV here — education, work experience, relevant skills, anything that gives us a picture of your background. No need to format it perfectly."></textarea>
-              <p style="font-size:.72rem;color:#9090a0;margin-top:.25rem">Paste as plain text. We don't accept file attachments.</p>
-            </div>
-
-            <div class="aform-group">
-              <label>Anything else you'd like us to know?</label>
-              <textarea name="other" rows="3" placeholder="Links to past writing, portfolio, availability, etc."></textarea>
-            </div>
-
-            <button type="submit" class="btn-primary btn-full">Submit Application →</button>
-          </form>
+          <h2>Ready to join?</h2>
+          <p style="font-size:.9rem;color:#6b6b80;margin-bottom:1.5rem">Click below to open our application. We review every submission and will be in touch if it's a good fit.</p>
+          {{ $cfg := index .Site.Data.site_config }}
+          {{ if $cfg.apply_url }}
+          <a href="{{ $cfg.apply_url }}" target="_blank" rel="noopener" class="btn-primary btn-full" style="display:block;text-align:center;text-decoration:none;padding:.85rem 1.5rem;font-size:1rem;">Join Us →</a>
+          {{ else }}
+          <div style="background:#f8f8fd;border:1.5px dashed #c0c0e0;border-radius:10px;padding:1.5rem;text-align:center;color:#9090a0;font-size:.88rem;">
+            Application link coming soon.
+          </div>
+          {{ end }}
+          <p style="font-size:.75rem;color:#b0b0c0;margin-top:1rem;text-align:center">Opens in a new tab</p>
         </div>
       </div>
 
