@@ -76,7 +76,29 @@ Median age 51.7 with a large senior population; senior and community services fu
 
 ## VI. Major Financial Red Flags & Ghost Indicators
 
-_No red flags entered._
+**1. Public-safety contract shock — Severity: HIGH**
+
+Fact: The Sheriff contract (about $9M) faces a 33% increase (about +$3M) for FY2026-27, the largest single budget pressure; the City has floated modeling what a 10% cut scenario would look like. (Sources: CBS San Francisco, Mar 5, 2026; Los Altos Hills Today, Feb 25, 2026.)
+
+Public question: _How will the City fund a recurring +$3M policing cost without permanently cutting capital projects or services, and what alternative service models are being evaluated?_
+
+**2. Structural deficit despite extreme affluence — Severity: MEDIUM**
+
+Fact: City budget messaging states structural deficits persist even during economic growth, with balancing relying on cost-recovery fee hikes (Jan & July 2024) and investment changes rather than recurring revenue growth. (Source: FY2024-25 Adopted Budget message.)
+
+Public question: _What recurring revenue or structural-cost solutions, beyond fee increases and reserve use, is the City pursuing?_
+
+**3. CIP funding raided to cover operating costs — Severity: MEDIUM**
+
+Fact: The Capital Improvement Program is being reduced about $1.5M relative to prior years specifically to offset public-safety cost increases. (Source: Los Altos Hills Today, Feb 25, 2026.)
+
+Public question: _Which deferred capital/infrastructure projects are affected, and what is the long-term cost of deferral?_
+
+**4. Thin discretionary reserves vs. the size of the cost shock — Severity: LOW/MEDIUM**
+
+Fact: Designated reserves total roughly $3.5M ($1M Working Capital + $2.5M Fiscal Stabilization) — on the order of a single year's contract increase. (Source: FY2025-26 Financial Policies.)
+
+Public question: _Are current reserve targets adequate given the public-safety cost trajectory?_
 
 ## VII. Governance & Transparency Audit
 
