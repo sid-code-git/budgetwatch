@@ -39,17 +39,23 @@ def netlify_api(path, token):
     except Exception as e:
         return {"error": str(e)}
 
-def fetch_submissions(token, site_id):
+def fetch_form(token, site_id, form_name):
     forms = netlify_api(f"/sites/{site_id}/forms", token)
     if isinstance(forms, dict) and "error" in forms:
         return None, forms["error"]
-    target = next((f for f in forms if f.get("name") == "town-report"), None)
+    target = next((f for f in forms if f.get("name") == form_name), None)
     if not target:
         return [], None
     subs = netlify_api(f"/forms/{target['id']}/submissions", token)
     if isinstance(subs, dict) and "error" in subs:
         return None, subs["error"]
     return subs, None
+
+def fetch_submissions(token, site_id):
+    return fetch_form(token, site_id, "town-report")
+
+def fetch_applications(token, site_id):
+    return fetch_form(token, site_id, "analyst-application")
 
 def fetch_sites(token):
     return netlify_api("/sites", token)
@@ -400,7 +406,7 @@ STYLE = """
 # ── page shell ─────────────────────────────────────────────────────────────────
 
 def page(title, body, active="reports"):
-    nav_items = [("reports", "/", "Reports"), ("new", "/new", "+ New Report"), ("briefs", "/briefs", "Policy Briefs"), ("new-brief", "/briefs/new", "+ New Brief"), ("submissions", "/submissions", "Submissions")]
+    nav_items = [("reports", "/", "Reports"), ("new", "/new", "+ New Report"), ("briefs", "/briefs", "Policy Briefs"), ("new-brief", "/briefs/new", "+ New Brief"), ("submissions", "/submissions", "Submissions"), ("applications", "/applications", "Applications")]
     nav = "".join(
         f'<a href="{href}" style="color:{"white" if active==k else "rgba(255,255,255,.5)"};margin-left:1.5rem;text-decoration:none;font-size:.85rem;font-weight:{"700" if active==k else "400"}">{label}</a>'
         for k, href, label in nav_items
@@ -762,6 +768,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.handle_brief_edit(path[13:])
         elif path.startswith("/briefs/delete/"):
             self.handle_brief_delete(path[15:])
+        elif path == "/applications":
+            self.handle_applications()
         elif path == "/submissions":
             self.handle_submissions()
         elif path == "/submissions/setup":
@@ -872,6 +880,70 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if data.get("push") == "true":
             git_push(path, f"Update brief: {slug}")
         self.redirect("/briefs")
+
+    def handle_applications(self):
+        cfg = load_config()
+        token = cfg.get("netlify_token", "")
+        site_id = cfg.get("netlify_site_id", "")
+
+        if not token or not site_id:
+            self.redirect("/submissions/setup")
+            return
+
+        apps, err = fetch_applications(token, site_id)
+
+        if err:
+            body = f'<h2>Applications</h2><div class="alert alert-red">Could not connect to Netlify: {esc(err)}</div>'
+            self.send_html(page("Applications", body, "applications"))
+            return
+
+        if not apps:
+            body = '<h2>Applications</h2><p class=empty>No applications yet.</p>'
+            self.send_html(page("Applications", body, "applications"))
+            return
+
+        EXP_LABELS = {
+            "yes-extensively": "✅ Yes, extensively",
+            "yes-some": "✅ Yes, a few times",
+            "no-but-comfortable": "🟡 No, but comfortable with financial docs",
+            "no-new": "🔴 New to this",
+        }
+
+        rows = ""
+        for a in apps:
+            d = a.get("data", {})
+            created = a.get("created_at", "")[:10]
+            name = d.get("name", "Unknown")
+            email = d.get("email", "")
+            location = d.get("location", "")
+            occupation = d.get("occupation", "")
+            experience = EXP_LABELS.get(d.get("experience", ""), d.get("experience", ""))
+            motivation = d.get("motivation", "")
+            town_interest = d.get("town_interest", "")
+            other = d.get("other", "")
+
+            rows += f"""
+<div class=card>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+    <div>
+      <div class=report-title>{esc(name)}</div>
+      <div class=report-meta>{esc(email)} · {esc(location)} · {esc(occupation)} · Applied {esc(created)}</div>
+    </div>
+    <span class="badge badge-draft" style="flex-shrink:0">{esc(experience)}</span>
+  </div>
+  {"" if not motivation else f'<div style="margin-top:1rem"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b6b80;margin-bottom:.3rem">Why they want to do this</div><div style="font-size:.88rem;color:#3a3a4a;line-height:1.6">{esc(motivation)}</div></div>'}
+  {"" if not town_interest else f'<div style="margin-top:.85rem"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b6b80;margin-bottom:.3rem">Town they\'d cover first</div><div style="font-size:.88rem;color:#3a3a4a;line-height:1.6">{esc(town_interest)}</div></div>'}
+  {"" if not other else f'<div style="margin-top:.85rem"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b6b80;margin-bottom:.3rem">Additional notes</div><div style="font-size:.88rem;color:#3a3a4a;line-height:1.6">{esc(other)}</div></div>'}
+  {"" if not d.get("resume") else f'<div style="margin-top:.85rem"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b6b80;margin-bottom:.3rem">Resume / CV</div><pre style="font-size:.78rem;color:#3a3a4a;line-height:1.6;white-space:pre-wrap;background:#f7f7fb;border:1px solid #e5e5f0;border-radius:8px;padding:.85rem;overflow-x:auto">{esc(d.get("resume",""))}</pre></div>'}
+  {f'<div style="margin-top:.85rem"><a href="mailto:{esc(email)}" class="btn btn-outline btn-sm">Reply by email</a></div>' if email else ""}
+</div>"""
+
+        body = f"""
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+  <h2 style="margin:0">Analyst Applications <span style="font-size:.85rem;font-weight:400;color:#6b6b80">({len(apps)} received)</span></h2>
+</div>
+{rows}"""
+        self.send_html(page("Applications", body, "applications"))
 
     def handle_submissions(self):
         cfg = load_config()
