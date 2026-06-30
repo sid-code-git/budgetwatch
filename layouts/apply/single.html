@@ -73,7 +73,7 @@
           <h2>Apply</h2>
           <p style="font-size:.9rem;color:#6b6b80;margin-bottom:1.5rem">Takes about 5 minutes. We review every application.</p>
 
-          <form name="analyst-application" method="POST" netlify netlify-honeypot="bot-field" action="{{ .Site.BaseURL }}apply-thanks/">
+          <form name="analyst-application" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" action="{{ .Site.BaseURL }}apply-thanks/">
             <input type="hidden" name="form-name" value="analyst-application">
             <p style="display:none"><label>Skip: <input name="bot-field"></label></p>
 

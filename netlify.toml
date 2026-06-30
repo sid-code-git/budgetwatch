@@ -4,3 +4,13 @@
 
 [build.environment]
   HUGO_VERSION = "0.163.2"
+
+[[redirects]]
+  from = "/apply-thanks"
+  to = "/apply-thanks/"
+  status = 301
+
+[[redirects]]
+  from = "/submit-thanks"
+  to = "/submit-thanks/"
+  status = 301
