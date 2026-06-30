@@ -9,7 +9,7 @@ news_desert: false
 lat: 37.2638
 lng: -122.0230
 source_url: "https://www.saratoga.ca.us/181/Budget"
-draft: true
+draft: false
 ---
 
 ## I. Executive Summary
