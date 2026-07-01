@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --ink:       #0a0a0f;
-  --ink-2:     #3a3a4a;
-  --ink-3:     #6b6b80;
+  --ink:       #111827;
+  --ink-2:     #374151;
+  --ink-3:     #6b7280;
   --surface:   #ffffff;
   --surface-2: #f7f7fb;
   --surface-3: #ededf5;
@@ -17,6 +17,7 @@
   --orange:    #ea580c;
   --red:       #dc2626;
   --font:      'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
   --font-mono: 'SF Mono', 'Fira Code', monospace;
   --max-w:     1160px;
   --r:         12px;
@@ -385,9 +386,10 @@ a:hover { opacity: .8; }
 }
 
 .featured-summary {
-  font-size: 1rem;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
   color: var(--ink-2);
-  line-height: 1.7;
+  line-height: 1.8;
   max-width: 700px;
   margin-bottom: 1.25rem;
 }
@@ -456,9 +458,10 @@ a:hover { opacity: .8; }
 }
 
 .card-excerpt {
-  font-size: .88rem;
+  font-family: var(--font-serif);
+  font-size: .9rem;
   color: var(--ink-2);
-  line-height: 1.6;
+  line-height: 1.65;
   flex: 1;
 }
 
@@ -502,7 +505,7 @@ a:hover { opacity: .8; }
 
 .brief-home-meta { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1rem; }
 .brief-home-title { font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.25; margin-bottom: .6rem; }
-.brief-home-excerpt { font-size: .88rem; color: var(--ink-2); line-height: 1.6; flex: 1; }
+.brief-home-excerpt { font-family: var(--font-serif); font-size: .92rem; color: var(--ink-2); line-height: 1.7; flex: 1; }
 .brief-home-cta { font-size: .8rem; font-weight: 700; color: var(--accent); margin-top: 1rem; display: inline-block; }
 
 /* ── About strip ────────────────────────────────────────────── */
@@ -644,14 +647,14 @@ a:hover { opacity: .8; }
 .finding-source { font-size: .73rem; font-family: var(--font-mono); color: var(--ink-3); margin-top: .55rem; }
 
 /* ── Prose (report pages) ───────────────────────────────────── */
-.prose { max-width: 680px; }
-.prose h2 { font-size: 1.2rem; font-weight: 700; letter-spacing: -.02em; margin: 2.25rem 0 .65rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
-.prose h3 { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 .4rem; }
-.prose p  { font-size: .95rem; color: var(--ink-2); margin-bottom: .9rem; line-height: 1.7; }
-.prose ul, .prose ol { padding-left: 1.4rem; margin-bottom: 1rem; }
-.prose li { font-size: .95rem; color: var(--ink-2); margin-bottom: .4rem; line-height: 1.6; }
+.prose { max-width: 680px; font-family: var(--font-serif); }
+.prose h2 { font-family: var(--font); font-size: 1.25rem; font-weight: 700; letter-spacing: -.02em; margin: 2.5rem 0 .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); color: var(--ink); }
+.prose h3 { font-family: var(--font); font-size: 1.05rem; font-weight: 600; margin: 1.75rem 0 .5rem; color: var(--ink); }
+.prose p  { font-size: 1.05rem; color: var(--ink-2); margin-bottom: 1.1rem; line-height: 1.85; }
+.prose ul, .prose ol { padding-left: 1.4rem; margin-bottom: 1.1rem; }
+.prose li { font-size: 1.05rem; color: var(--ink-2); margin-bottom: .5rem; line-height: 1.75; }
 .prose strong { font-weight: 700; color: var(--ink); }
-.prose a { text-decoration: underline; text-underline-offset: 3px; }
+.prose a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .prose table { width: 100%; border-collapse: collapse; font-size: .85rem; margin: 1.25rem 0; }
 .prose th { text-align: left; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); padding: .5rem .75rem; border-bottom: 2px solid var(--border); }
 .prose td { padding: .55rem .75rem; border-bottom: 1px solid var(--border); color: var(--ink-2); }
@@ -829,6 +832,25 @@ a:hover { opacity: .8; }
 }
 .page-hero-stat-num { font-size: 2rem; font-weight: 800; letter-spacing:-.03em; color: #6ee7b7; line-height:1; }
 .page-hero-stat-label { font-size: .75rem; color: rgba(255,255,255,.6); font-weight:500; margin-top:.2rem; }
+
+/* ── Global serif body text ─────────────────────────────────── */
+.about-body { font-family: var(--font-serif) !important; font-size: 1rem !important; line-height: 1.85 !important; color: var(--ink-2) !important; }
+.about-pullquote { font-family: var(--font-serif); }
+.about-method-desc { font-family: var(--font-serif); font-size: .88rem !important; }
+.about-do-list li { font-family: var(--font-serif); }
+.about-cta-card p { font-family: var(--font-serif); }
+.brief-prose { font-family: var(--font-serif); }
+.brief-prose p { font-size: 1.05rem; line-height: 1.85; color: var(--ink-2); margin-bottom: 1.1rem; }
+.brief-prose h2 { font-family: var(--font); font-size: 1.2rem; font-weight: 700; }
+.brief-prose h3 { font-family: var(--font); }
+.brief-abstract p { font-family: var(--font-serif); font-size: 1rem; line-height: 1.75; color: var(--ink-2); }
+.brief-card-summary, .brief-card-title + p { font-family: var(--font-serif); }
+.masthead-sub { font-family: var(--font-serif); font-size: 1.1rem !important; line-height: 1.8 !important; }
+.page-hero p { font-family: var(--font-serif); }
+.apply-intro { font-family: var(--font-serif); }
+.about-strip .about-strip-main p { font-family: var(--font-serif); }
+.section-desc { font-family: var(--font-serif); }
+.apply-banner-sub { font-family: var(--font-serif); }
 
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 900px) {
