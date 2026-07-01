@@ -142,7 +142,7 @@ a:hover { opacity: .8; }
 .masthead {
   border-bottom: 1px solid var(--border);
   padding: 5rem 0 0;
-  background: var(--surface);
+  background: linear-gradient(160deg, #ffffff 50%, #ede9fe 100%);
 }
 
 .masthead-inner {
@@ -201,7 +201,7 @@ a:hover { opacity: .8; }
   font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: -.03em;
-  color: var(--ink);
+  color: var(--accent);
   line-height: 1;
 }
 
@@ -329,6 +329,7 @@ a:hover { opacity: .8; }
 .featured-report {
   display: block;
   border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
   border-radius: var(--r);
   padding: 2rem 2.25rem;
   margin-bottom: 1.5rem;
@@ -403,7 +404,7 @@ a:hover { opacity: .8; }
   transition: background .12s;
 }
 
-.report-card:hover { background: var(--surface-2); opacity: 1; color: var(--ink); }
+.report-card:hover { background: #faf9ff; opacity: 1; color: var(--ink); box-shadow: inset 3px 0 0 var(--accent); }
 
 .card-meta-row { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .85rem; }
 
@@ -443,8 +444,19 @@ a:hover { opacity: .8; }
 .about-strip {
   padding: 5rem 0;
   border-bottom: 1px solid var(--border);
-  background: var(--surface-2);
+  background: #1e1560;
+  color: white;
 }
+
+.about-strip .section-eyebrow { color: #a78bfa; }
+.about-strip .section-heading { color: white; }
+.about-strip .about-strip-main p { color: rgba(255,255,255,.7); }
+.about-strip .about-strip-cards { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.12); }
+.about-strip .method-card { background: rgba(255,255,255,.06); }
+.about-strip .method-card:hover { background: rgba(255,255,255,.1); }
+.about-strip .method-card h4 { color: white; }
+.about-strip .method-card p { color: rgba(255,255,255,.6); }
+.about-strip .method-num { background: rgba(167,139,250,.2); color: #a78bfa; }
 
 .about-strip-grid {
   display: grid;
@@ -515,9 +527,9 @@ a:hover { opacity: .8; }
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  border: 1.5px solid var(--border);
+  background: linear-gradient(135deg, #4338ca 0%, #7c3aed 100%);
   border-radius: var(--r);
-  padding: 2.25rem 2.5rem;
+  padding: 2.5rem 2.75rem;
   flex-wrap: wrap;
 }
 
@@ -526,14 +538,23 @@ a:hover { opacity: .8; }
   font-weight: 800;
   letter-spacing: -.03em;
   margin-bottom: .4rem;
+  color: white;
 }
 
 .apply-banner-sub {
   font-size: .9rem;
-  color: var(--ink-3);
+  color: rgba(255,255,255,.75);
   line-height: 1.6;
   max-width: 560px;
 }
+
+.apply-banner .btn-primary {
+  background: white;
+  color: #4338ca;
+  flex-shrink: 0;
+}
+
+.apply-banner .btn-primary:hover { background: #f0effe; }
 
 /* ── Finding blocks ─────────────────────────────────────────── */
 .finding {
@@ -655,6 +676,53 @@ a:hover { opacity: .8; }
   max-width: 260px;
   line-height: 1.5;
 }
+
+/* ── Brief topic colors ─────────────────────────────────────── */
+.topic-pill {
+  display: inline-block;
+  font-size: .67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  padding: .22rem .6rem;
+  border-radius: 4px;
+}
+.topic-property-tax   { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.topic-fiscal-stress  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.topic-pension        { background: #ede9fe; color: #4c1d95; border: 1px solid #c4b5fd; }
+.topic-shared         { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.topic-state-aid      { background: #dbeafe; color: #1e3a8a; border: 1px solid #93c5fd; }
+.topic-economic-dev   { background: #fce7f3; color: #831843; border: 1px solid #f9a8d4; }
+.topic-default        { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+
+/* ── Briefs section (homepage) ──────────────────────────────── */
+.briefs-section {
+  padding: 4rem 0 5rem;
+  background: #f5f3ff;
+  border-bottom: 1px solid #ddd6fe;
+}
+
+.brief-card {
+  display: block;
+  background: white;
+  border: 1px solid #e5e5f0;
+  border-radius: var(--r);
+  padding: 1.5rem;
+  text-decoration: none;
+  color: var(--ink);
+  transition: box-shadow .15s, border-color .15s;
+}
+
+.brief-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 20px rgba(91,91,214,.12);
+  opacity: 1;
+  color: var(--ink);
+}
+
+.brief-card-topic { margin-bottom: .75rem; }
+.brief-card-title { font-size: 1rem; font-weight: 700; letter-spacing: -.015em; line-height: 1.3; margin-bottom: .4rem; }
+.brief-card-summary { font-size: .84rem; color: var(--ink-3); line-height: 1.55; }
 
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 900px) {
