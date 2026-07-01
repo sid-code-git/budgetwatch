@@ -10,9 +10,9 @@
   --surface-2: #f7f7fb;
   --surface-3: #ededf5;
   --border:    #e5e5f0;
-  --accent:    #0d9488;
-  --accent-2:  #0f766e;
-  --accent-glow: rgba(13,148,136,.1);
+  --accent:    #059669;
+  --accent-2:  #047857;
+  --accent-glow: rgba(5,150,105,.1);
   --green:     #16a34a;
   --orange:    #ea580c;
   --red:       #dc2626;
@@ -79,18 +79,16 @@ a:hover { opacity: .8; }
   flex-shrink: 0;
 }
 
-.logo-mark {
+.logo-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: var(--accent);
-  color: white;
-  font-size: .65rem;
-  font-weight: 900;
-  letter-spacing: .02em;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #047857, #059669);
+  border-radius: 10px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(5,150,105,.3);
 }
 
 .logo-text {
@@ -142,7 +140,7 @@ a:hover { opacity: .8; }
 .masthead {
   border-bottom: 1px solid var(--border);
   padding: 5rem 0 0;
-  background: linear-gradient(160deg, #ffffff 50%, #ccfbf1 100%);
+  background: linear-gradient(160deg, #ffffff 50%, #d1fae5 100%);
 }
 
 .masthead-inner {
@@ -444,11 +442,11 @@ a:hover { opacity: .8; }
 .about-strip {
   padding: 5rem 0;
   border-bottom: 1px solid var(--border);
-  background: #042f2e;
+  background: #022c22;
   color: white;
 }
 
-.about-strip .section-eyebrow { color: #5eead4; }
+.about-strip .section-eyebrow { color: #6ee7b7; }
 .about-strip .section-heading { color: white; }
 .about-strip .about-strip-main p { color: rgba(255,255,255,.7); }
 .about-strip .about-strip-cards { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.12); }
@@ -456,7 +454,7 @@ a:hover { opacity: .8; }
 .about-strip .method-card:hover { background: rgba(255,255,255,.1); }
 .about-strip .method-card h4 { color: white; }
 .about-strip .method-card p { color: rgba(255,255,255,.6); }
-.about-strip .method-num { background: rgba(94,234,212,.15); color: #5eead4; }
+.about-strip .method-num { background: rgba(110,231,183,.15); color: #6ee7b7; }
 
 .about-strip-grid {
   display: grid;
@@ -527,7 +525,7 @@ a:hover { opacity: .8; }
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
   border-radius: var(--r);
   padding: 2.5rem 2.75rem;
   flex-wrap: wrap;
@@ -550,7 +548,7 @@ a:hover { opacity: .8; }
 
 .apply-banner .btn-primary {
   background: white;
-  color: #0f766e;
+  color: #047857;
   flex-shrink: 0;
 }
 
@@ -606,8 +604,8 @@ a:hover { opacity: .8; }
 
 /* ── Map ────────────────────────────────────────────────────── */
 .map-intro { font-size: .9rem; color: var(--ink-3); margin-bottom: 1.25rem; }
-#map { width: 100%; height: 540px; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 1rem; }
-.map-legend { display: flex; gap: 1.5rem; font-size: .78rem; color: var(--ink-3); font-weight: 500; padding-bottom: 2rem; flex-wrap: wrap; }
+#map { width: 100%; height: 520px; border: none; border-radius: var(--r); overflow: hidden; margin-bottom: 1.5rem; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+.map-legend { display: flex; gap: 2rem; font-size: .8rem; color: var(--ink-2); font-weight: 600; padding: 1rem 0 2rem; flex-wrap: wrap; background: var(--surface-2); border-radius: var(--r-sm); padding: 1rem 1.25rem; border: 1px solid var(--border); }
 .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: .35rem; vertical-align: middle; }
 
 /* ── Submit form ────────────────────────────────────────────── */
@@ -698,8 +696,8 @@ a:hover { opacity: .8; }
 /* ── Briefs section (homepage) ──────────────────────────────── */
 .briefs-section {
   padding: 4rem 0 5rem;
-  background: #f0fdfa;
-  border-bottom: 1px solid #99f6e4;
+  background: #ecfdf5;
+  border-bottom: 1px solid #a7f3d0;
 }
 
 .brief-card {
@@ -723,6 +721,42 @@ a:hover { opacity: .8; }
 .brief-card-topic { margin-bottom: .75rem; }
 .brief-card-title { font-size: 1rem; font-weight: 700; letter-spacing: -.015em; line-height: 1.3; margin-bottom: .4rem; }
 .brief-card-summary { font-size: .84rem; color: var(--ink-3); line-height: 1.55; }
+
+/* ── Page hero (dark gradient, used on list/section pages) ── */
+.page-hero {
+  background: linear-gradient(135deg, #022c22 0%, #065f46 55%, #059669 100%);
+  color: white;
+  padding: 4.5rem 0 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.page-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+  pointer-events: none;
+}
+.page-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; left: -40px;
+  width: 260px; height: 260px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.03);
+  pointer-events: none;
+}
+.page-hero .masthead-label,
+.page-hero .section-eyebrow { color: #6ee7b7; }
+.page-hero h1 { color: white; font-size: clamp(2rem,4vw,3rem); font-weight:800; letter-spacing:-.04em; margin:.5rem 0 1rem; }
+.page-hero p { color: rgba(255,255,255,.75); max-width: 600px; line-height: 1.7; font-size: 1rem; }
+.page-hero-stats {
+  display: flex; gap: 2.5rem; margin-top: 2rem; flex-wrap: wrap;
+}
+.page-hero-stat-num { font-size: 2rem; font-weight: 800; letter-spacing:-.03em; color: #6ee7b7; line-height:1; }
+.page-hero-stat-label { font-size: .75rem; color: rgba(255,255,255,.6); font-weight:500; margin-top:.2rem; }
 
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 900px) {

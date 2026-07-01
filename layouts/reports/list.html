@@ -1,0 +1,46 @@
+{{ define "main" }}
+<div class="page-hero">
+  <div class="content-inner">
+    <div class="masthead-label">Published Research</div>
+    <h1>Budget Reports</h1>
+    <p>Every report analyzes a real town's annual budget across 10 sections — revenue, spending, red flags, pensions, governance, and more. Free to read, fully cited.</p>
+    <div class="page-hero-stats">
+      <div>
+        <div class="page-hero-stat-num">{{ len (where .Site.RegularPages "Section" "reports") }}</div>
+        <div class="page-hero-stat-label">Reports published</div>
+      </div>
+      <div>
+        <div class="page-hero-stat-num">10</div>
+        <div class="page-hero-stat-label">Sections per report</div>
+      </div>
+      <div>
+        <div class="page-hero-stat-num">$0</div>
+        <div class="page-hero-stat-label">Cost to read</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-inner" style="padding-top:3rem;padding-bottom:5rem">
+  {{ $reports := where .Site.RegularPages "Section" "reports" }}
+  {{ if $reports }}
+  <div class="report-grid">
+    {{ range $reports }}
+    <a href="{{ .Permalink }}" class="report-card">
+      <div class="card-meta-row">
+        {{ with .Params.severity }}<span class="tag tag-{{ . }}">{{ . }} flags</span>{{ end }}
+        {{ if .Params.news_desert }}<span class="tag tag-desert">no local paper</span>{{ end }}
+        {{ with .Params.date }}<span class="tag-date">{{ .Format "Jan 2006" }}</span>{{ end }}
+      </div>
+      <h3 class="card-title">{{ .Title }}</h3>
+      <p class="card-location">{{ .Params.town }}, {{ .Params.state }} · FY{{ .Params.fiscal_year }}</p>
+      <p class="card-excerpt">{{ .Summary | truncate 140 }}</p>
+      <span class="card-link">Read report →</span>
+    </a>
+    {{ end }}
+  </div>
+  {{ else }}
+  <p class="empty-research">No reports published yet.</p>
+  {{ end }}
+</div>
+{{ end }}
