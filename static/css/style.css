@@ -321,25 +321,39 @@ a:hover { opacity: .8; }
 .research-section {
   padding: 4rem 0;
   border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+@media (max-width: 900px) {
+  .brief-cards-grid { grid-template-columns: 1fr; }
 }
 
 /* Featured report */
 .featured-report {
   display: block;
-  border: 1px solid var(--border);
-  border-top: 3px solid var(--accent);
+  border: 1.5px solid var(--border);
   border-radius: var(--r);
-  padding: 2rem 2.25rem;
+  padding: 2.25rem 2.5rem;
   margin-bottom: 1.5rem;
   text-decoration: none;
   color: var(--ink);
-  transition: border-color .15s, box-shadow .15s;
+  transition: box-shadow .15s, border-color .15s;
   background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+
+.featured-report::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), #34d399);
 }
 
 .featured-report:hover {
   border-color: var(--accent);
-  box-shadow: 0 4px 24px rgba(91,91,214,.1);
+  box-shadow: 0 8px 32px rgba(5,150,105,.12);
   opacity: 1;
   color: var(--ink);
 }
@@ -353,78 +367,98 @@ a:hover { opacity: .8; }
 }
 
 .featured-title {
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 800;
-  letter-spacing: -.03em;
-  line-height: 1.2;
-  margin-bottom: .4rem;
+  letter-spacing: -.04em;
+  line-height: 1.15;
+  margin-bottom: .5rem;
 }
 
 .featured-location {
   font-size: .8rem;
   color: var(--ink-3);
   font-family: var(--font-mono);
-  margin-bottom: .75rem;
+  margin-bottom: .85rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
 }
 
 .featured-summary {
-  font-size: .95rem;
+  font-size: 1rem;
   color: var(--ink-2);
-  line-height: 1.65;
+  line-height: 1.7;
   max-width: 700px;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .featured-cta {
-  font-size: .84rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .88rem;
   font-weight: 700;
-  color: var(--accent);
+  color: white;
+  background: var(--accent);
+  padding: .5rem 1.1rem;
+  border-radius: 6px;
+  transition: background .12s;
 }
+
+.featured-report:hover .featured-cta { background: var(--accent-2); }
 
 /* Report grid */
 .report-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  border: 1px solid var(--border);
+  gap: 1.25rem;
   border-radius: var(--r);
-  overflow: hidden;
-  background: var(--border);
 }
 
 .report-card {
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
+  padding: 1.75rem;
   text-decoration: none;
   color: var(--ink);
   background: var(--surface);
-  transition: background .12s;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  transition: box-shadow .15s, border-color .15s, transform .15s;
 }
 
-.report-card:hover { background: #faf9ff; opacity: 1; color: var(--ink); box-shadow: inset 3px 0 0 var(--accent); }
+.report-card:hover {
+  background: var(--surface);
+  opacity: 1;
+  color: var(--ink);
+  box-shadow: 0 6px 24px rgba(5,150,105,.1);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
 
-.card-meta-row { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .85rem; }
+.card-meta-row { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1rem; }
 
 .card-title {
-  font-size: .97rem;
-  font-weight: 700;
-  letter-spacing: -.015em;
-  line-height: 1.3;
-  margin-bottom: .3rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.25;
+  margin-bottom: .4rem;
 }
 
 .card-location {
   font-size: .75rem;
   color: var(--ink-3);
   font-family: var(--font-mono);
-  margin-bottom: .6rem;
+  margin-bottom: .75rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .card-excerpt {
-  font-size: .84rem;
+  font-size: .88rem;
   color: var(--ink-2);
-  line-height: 1.55;
+  line-height: 1.6;
   flex: 1;
 }
 
@@ -432,11 +466,44 @@ a:hover { opacity: .8; }
   font-size: .8rem;
   font-weight: 700;
   color: var(--accent);
-  margin-top: .9rem;
-  display: inline-block;
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
 }
 
 .empty-research { text-align: center; padding: 4rem 0; color: var(--ink-3); }
+
+/* ── Brief cards on homepage (on dark bg) ── */
+.brief-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 1.25rem;
+}
+
+.brief-home-card {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: var(--r);
+  padding: 1.75rem;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1.5px solid rgba(255,255,255,.1);
+  transition: transform .15s, box-shadow .15s;
+}
+
+.brief-home-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.2);
+  opacity: 1;
+  color: var(--ink);
+}
+
+.brief-home-meta { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.brief-home-title { font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.25; margin-bottom: .6rem; }
+.brief-home-excerpt { font-size: .88rem; color: var(--ink-2); line-height: 1.6; flex: 1; }
+.brief-home-cta { font-size: .8rem; font-weight: 700; color: var(--accent); margin-top: 1rem; display: inline-block; }
 
 /* ── About strip ────────────────────────────────────────────── */
 .about-strip {
@@ -696,9 +763,14 @@ a:hover { opacity: .8; }
 /* ── Briefs section (homepage) ──────────────────────────────── */
 .briefs-section {
   padding: 4rem 0 5rem;
-  background: #ecfdf5;
-  border-bottom: 1px solid #a7f3d0;
+  background: linear-gradient(135deg, #022c22 0%, #065f46 60%, #059669 100%);
+  border-bottom: none;
 }
+
+.briefs-section .section-eyebrow { color: #6ee7b7; }
+.briefs-section .section-heading { color: white; }
+.briefs-section .text-link { color: #6ee7b7; }
+.briefs-section .text-link:hover { color: white; opacity: 1; }
 
 .brief-card {
   display: block;

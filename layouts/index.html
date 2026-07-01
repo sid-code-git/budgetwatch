@@ -136,24 +136,25 @@
 
     {{ $briefs := where .Site.RegularPages "Section" "briefs" }}
     {{ if $briefs }}
-    <div class="report-grid" style="background:#99f6e4">
+    <div class="brief-cards-grid">
       {{ range first 3 $briefs }}
       {{ $topic := .Params.topic | default "" }}
       {{ $cls := "topic-default" }}
-      {{ if eq $topic "Property Tax Policy" }}{{ $cls = "topic-property-tax" }}{{ end }}
-      {{ if eq $topic "Municipal Fiscal Stress" }}{{ $cls = "topic-fiscal-stress" }}{{ end }}
-      {{ if eq $topic "Pension & OPEB Reform" }}{{ $cls = "topic-pension" }}{{ end }}
-      {{ if eq $topic "Shared Services" }}{{ $cls = "topic-shared" }}{{ end }}
-      {{ if eq $topic "State Aid & Formulas" }}{{ $cls = "topic-state-aid" }}{{ end }}
-      {{ if eq $topic "Economic Development" }}{{ $cls = "topic-economic-dev" }}{{ end }}
-      <a href="{{ .Permalink }}" class="report-card">
-        <div class="card-meta-row">
+      {{ $borderColor := "#9ca3af" }}
+      {{ if eq $topic "Property Tax Policy" }}{{ $cls = "topic-property-tax" }}{{ $borderColor = "#f59e0b" }}{{ end }}
+      {{ if eq $topic "Municipal Fiscal Stress" }}{{ $cls = "topic-fiscal-stress" }}{{ $borderColor = "#ef4444" }}{{ end }}
+      {{ if eq $topic "Pension & OPEB Reform" }}{{ $cls = "topic-pension" }}{{ $borderColor = "#8b5cf6" }}{{ end }}
+      {{ if eq $topic "Shared Services" }}{{ $cls = "topic-shared" }}{{ $borderColor = "#10b981" }}{{ end }}
+      {{ if eq $topic "State Aid & Formulas" }}{{ $cls = "topic-state-aid" }}{{ $borderColor = "#3b82f6" }}{{ end }}
+      {{ if eq $topic "Economic Development" }}{{ $cls = "topic-economic-dev" }}{{ $borderColor = "#ec4899" }}{{ end }}
+      <a href="{{ .Permalink }}" class="brief-home-card" style="border-top: 4px solid {{ $borderColor }}">
+        <div class="brief-home-meta">
           {{ with .Params.topic }}<span class="topic-pill {{ $cls }}">{{ . }}</span>{{ end }}
           {{ with .Params.date }}<span class="tag-date">{{ .Format "Jan 2006" }}</span>{{ end }}
         </div>
-        <h4 class="card-title">{{ .Title }}</h4>
-        <p class="card-excerpt">{{ .Summary | truncate 130 }}</p>
-        <span class="card-link">Read brief →</span>
+        <h4 class="brief-home-title">{{ .Title }}</h4>
+        <p class="brief-home-excerpt">{{ .Summary | truncate 130 }}</p>
+        <span class="brief-home-cta">Read brief →</span>
       </a>
       {{ end }}
     </div>
