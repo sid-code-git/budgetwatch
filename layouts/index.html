@@ -136,7 +136,7 @@
 
     {{ $briefs := where .Site.RegularPages "Section" "briefs" }}
     {{ if $briefs }}
-    <div class="report-grid" style="background:#bbf7d0">
+    <div class="report-grid" style="background:#99f6e4">
       {{ range first 3 $briefs }}
       {{ $topic := .Params.topic | default "" }}
       {{ $cls := "topic-default" }}

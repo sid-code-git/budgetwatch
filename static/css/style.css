@@ -10,9 +10,9 @@
   --surface-2: #f7f7fb;
   --surface-3: #ededf5;
   --border:    #e5e5f0;
-  --accent:    #16a34a;
-  --accent-2:  #15803d;
-  --accent-glow: rgba(22,163,74,.1);
+  --accent:    #0d9488;
+  --accent-2:  #0f766e;
+  --accent-glow: rgba(13,148,136,.1);
   --green:     #16a34a;
   --orange:    #ea580c;
   --red:       #dc2626;
@@ -142,7 +142,7 @@ a:hover { opacity: .8; }
 .masthead {
   border-bottom: 1px solid var(--border);
   padding: 5rem 0 0;
-  background: linear-gradient(160deg, #ffffff 50%, #dcfce7 100%);
+  background: linear-gradient(160deg, #ffffff 50%, #ccfbf1 100%);
 }
 
 .masthead-inner {
@@ -444,11 +444,11 @@ a:hover { opacity: .8; }
 .about-strip {
   padding: 5rem 0;
   border-bottom: 1px solid var(--border);
-  background: #052e16;
+  background: #042f2e;
   color: white;
 }
 
-.about-strip .section-eyebrow { color: #4ade80; }
+.about-strip .section-eyebrow { color: #5eead4; }
 .about-strip .section-heading { color: white; }
 .about-strip .about-strip-main p { color: rgba(255,255,255,.7); }
 .about-strip .about-strip-cards { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.12); }
@@ -456,7 +456,7 @@ a:hover { opacity: .8; }
 .about-strip .method-card:hover { background: rgba(255,255,255,.1); }
 .about-strip .method-card h4 { color: white; }
 .about-strip .method-card p { color: rgba(255,255,255,.6); }
-.about-strip .method-num { background: rgba(74,222,128,.2); color: #4ade80; }
+.about-strip .method-num { background: rgba(94,234,212,.15); color: #5eead4; }
 
 .about-strip-grid {
   display: grid;
@@ -527,7 +527,7 @@ a:hover { opacity: .8; }
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
   border-radius: var(--r);
   padding: 2.5rem 2.75rem;
   flex-wrap: wrap;
@@ -550,7 +550,7 @@ a:hover { opacity: .8; }
 
 .apply-banner .btn-primary {
   background: white;
-  color: #15803d;
+  color: #0f766e;
   flex-shrink: 0;
 }
 
@@ -698,8 +698,8 @@ a:hover { opacity: .8; }
 /* ── Briefs section (homepage) ──────────────────────────────── */
 .briefs-section {
   padding: 4rem 0 5rem;
-  background: #f0fdf4;
-  border-bottom: 1px solid #bbf7d0;
+  background: #f0fdfa;
+  border-bottom: 1px solid #99f6e4;
 }
 
 .brief-card {
