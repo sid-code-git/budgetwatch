@@ -2,16 +2,22 @@
 
 <!-- ── MASTHEAD ── -->
 <section class="masthead">
+  <div class="hero-bars" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
   <div class="masthead-inner">
-    <div class="masthead-label">Public Accountability Journalism</div>
-    <h1 class="masthead-title">Do you know where<br><em>your taxes</em> go?</h1>
-    <p class="masthead-sub">Every year your town spends your money. That spending is public record buried in documents almost nobody reads. We read them, analyze every line, and publish what deserves a question.</p>
-    <div class="masthead-actions">
+    <div class="masthead-label hero-line">Public Accountability Journalism</div>
+    <h1 class="masthead-title">
+      <span class="hero-line d1">Do you know where</span><br>
+      <span class="hero-line d2"><em>your taxes</em> go?</span>
+    </h1>
+    <p class="masthead-sub hero-line d3">Every year your town spends your money. That spending is public record buried in documents almost nobody reads. We read them, analyze every line, and publish what deserves a question.</p>
+    <div class="masthead-actions hero-line d4">
       <a href="{{ .Site.BaseURL }}reports/" class="btn-primary">Read the Research</a>
       <a href="{{ .Site.BaseURL }}apply/" class="btn-ghost">Become an Analyst</a>
     </div>
   </div>
-  <div class="masthead-stats">
+  <div class="masthead-stats hero-line d5">
     <div class="stat-item">
       <div class="stat-num">{{ len (where .Site.RegularPages "Section" "reports") }}</div>
       <div class="stat-label">Reports published</div>
@@ -33,6 +39,21 @@
     </div>
   </div>
 </section>
+
+<!-- ── LIVE TICKER ── -->
+{{ $tickerReports := where .Site.RegularPages "Section" "reports" }}
+{{ if $tickerReports }}
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    {{ range seq 2 }}
+    <span class="tick-label">Latest findings</span>
+    {{ range first 8 $tickerReports }}
+    <span class="tick-item"><span class="tick-dot"></span>{{ .Params.town }}, {{ .Params.state }} · FY{{ .Params.fiscal_year }}{{ with .Params.severity }} · {{ . }} concern{{ end }}</span>
+    {{ end }}
+    {{ end }}
+  </div>
+</div>
+{{ end }}
 
 <!-- ── FEATURED RESEARCH ── -->
 <section class="research-section">
