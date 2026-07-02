@@ -1,0 +1,20 @@
+{{- $items := slice -}}
+{{- range where .Site.RegularPages "Section" "reports" -}}
+  {{- $items = $items | append (dict
+        "title" .Title
+        "url" .RelPermalink
+        "type" "Report"
+        "meta" (printf "%s, %s · FY%s" (.Params.town | default "") (.Params.state | default "") (.Params.fiscal_year | default ""))
+        "summary" (.Summary | plainify | truncate 140)
+      ) -}}
+{{- end -}}
+{{- range where .Site.RegularPages "Section" "briefs" -}}
+  {{- $items = $items | append (dict
+        "title" .Title
+        "url" .RelPermalink
+        "type" "Brief"
+        "meta" (.Params.topic | default "Policy Brief")
+        "summary" (.Summary | plainify | truncate 140)
+      ) -}}
+{{- end -}}
+{{- $items | jsonify -}}

@@ -34,6 +34,59 @@ def save_site_config(cfg):
         for k, v in cfg.items():
             f.write(f'{k}: "{v}"\n')
 
+TEAM_FILE = os.path.join(BASE, "data", "team.json")
+TEAM_PHOTO_DIR = os.path.join(BASE, "static", "images", "team")
+
+def load_team():
+    try:
+        with open(TEAM_FILE) as f:
+            team = json.load(f)
+            return sorted(team, key=lambda m: m.get("order", 0))
+    except Exception:
+        return []
+
+def save_team(team):
+    for i, m in enumerate(team):
+        m["order"] = i + 1
+    os.makedirs(os.path.dirname(TEAM_FILE), exist_ok=True)
+    with open(TEAM_FILE, "w") as f:
+        json.dump(team, f, indent=2)
+
+def git_push_all(message):
+    cmds = [
+        ["git", "add", "-A"],
+        ["git", "commit", "-m", message],
+        ["git", "push"],
+    ]
+    for cmd in cmds:
+        r = subprocess.run(cmd, cwd=BASE, capture_output=True, text=True)
+        if r.returncode != 0:
+            return False, r.stderr.strip()
+    return True, ""
+
+def parse_multipart(body, boundary):
+    """Minimal multipart/form-data parser. Returns (fields dict, files dict)."""
+    fields, files = {}, {}
+    delim = b"--" + boundary
+    for part in body.split(delim):
+        part = part.strip(b"\r\n")
+        if not part or part == b"--":
+            continue
+        if b"\r\n\r\n" not in part:
+            continue
+        head, _, content = part.partition(b"\r\n\r\n")
+        head_text = head.decode("utf-8", "replace")
+        name_m = re.search(r'name="([^"]*)"', head_text)
+        if not name_m:
+            continue
+        name = name_m.group(1)
+        file_m = re.search(r'filename="([^"]*)"', head_text)
+        if file_m and file_m.group(1):
+            files[name] = (os.path.basename(file_m.group(1)), content)
+        else:
+            fields[name] = content.decode("utf-8", "replace")
+    return fields, files
+
 def load_config():
     try:
         with open(CONFIG_FILE) as f:
@@ -425,7 +478,7 @@ STYLE = """
 # ── page shell ─────────────────────────────────────────────────────────────────
 
 def page(title, body, active="reports"):
-    nav_items = [("reports", "/", "Reports"), ("new", "/new", "+ New Report"), ("briefs", "/briefs", "Policy Briefs"), ("new-brief", "/briefs/new", "+ New Brief"), ("submissions", "/submissions", "Submissions"), ("applications", "/applications", "Applications"), ("settings", "/settings", "Settings")]
+    nav_items = [("reports", "/", "Reports"), ("new", "/new", "+ New Report"), ("briefs", "/briefs", "Policy Briefs"), ("new-brief", "/briefs/new", "+ New Brief"), ("team", "/team", "Team"), ("settings", "/settings", "Settings")]
     nav = "".join(
         f'<a href="{href}" style="color:{"white" if active==k else "rgba(255,255,255,.5)"};margin-left:1.5rem;text-decoration:none;font-size:.85rem;font-weight:{"700" if active==k else "400"}">{label}</a>'
         for k, href, label in nav_items
@@ -789,6 +842,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.handle_brief_delete(path[15:])
         elif path == "/applications":
             self.handle_applications()
+        elif path.startswith("/photo/"):
+            self.handle_photo(urllib.parse.unquote(path[7:]))
+        elif path == "/team":
+            self.handle_team_list()
+        elif path == "/team/new":
+            self.handle_team_form()
+        elif path.startswith("/team/edit/"):
+            self.handle_team_form(path[11:])
+        elif path.startswith("/team/delete/"):
+            self.handle_team_delete(path[13:])
+        elif path.startswith("/team/move/"):
+            rest = path[11:]
+            member_id, _, direction = rest.rpartition("/")
+            self.handle_team_move(member_id, direction)
         elif path == "/settings":
             self.handle_settings()
         elif path == "/submissions":
@@ -802,9 +869,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
+        path = self.path.split("?")[0]
+
+        ctype = self.headers.get("Content-Type", "")
+        if path == "/team/save" and "multipart/form-data" in ctype:
+            boundary_m = re.search(r'boundary=("?)([^";]+)\1', ctype)
+            if not boundary_m:
+                self.send_html("<h1>Bad request</h1>", 400)
+                return
+            raw_bytes = self.rfile.read(length)
+            fields, files = parse_multipart(raw_bytes, boundary_m.group(2).encode())
+            self.handle_team_save(fields, files)
+            return
+
         raw = self.rfile.read(length).decode()
         data = MultiDict(urllib.parse.parse_qs(raw, keep_blank_values=True))
-        path = self.path.split("?")[0]
         if path == "/save":
             self.handle_save(data)
         elif path.startswith("/update/"):
@@ -928,6 +1007,193 @@ class Handler(http.server.BaseHTTPRequestHandler):
         save_site_config(cfg)
         git_push(SITE_CONFIG_FILE, "Update site settings: apply URL")
         self.handle_settings(alert="Settings saved and pushed to GitHub ✓")
+
+    # ── team ────────────────────────────────────────────────────────────────────
+
+    def handle_photo(self, rel):
+        safe = os.path.normpath(rel).replace("\\", "/")
+        if safe.startswith("..") or os.path.isabs(safe):
+            self.send_html("<h1>Not found</h1>", 404)
+            return
+        full = os.path.join(BASE, "static", safe)
+        if not os.path.isfile(full):
+            self.send_html("<h1>Not found</h1>", 404)
+            return
+        ctypes = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
+        ctype = ctypes.get(os.path.splitext(full)[1].lower(), "application/octet-stream")
+        with open(full, "rb") as f:
+            content = f.read()
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", len(content))
+        self.end_headers()
+        self.wfile.write(content)
+
+    def handle_team_list(self, alert=""):
+        team = load_team()
+        alert_html = alert or ""
+        if not team:
+            rows = '<p class=empty>No team members yet. <a href="/team/new">Add your first team member →</a></p>'
+        else:
+            rows = ""
+            last = len(team) - 1
+            for i, m in enumerate(team):
+                photo = m.get("photo", "")
+                if photo:
+                    avatar = f'<img src="/photo/{esc(photo)}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #d1fae5" alt="">'
+                else:
+                    initials = "".join(w[0] for w in m.get("name", "?").split()[:2]).upper()
+                    avatar = f'<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#047857,#059669);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">{esc(initials)}</div>'
+                up_btn = f'<a href="/team/move/{m["id"]}/up" class="btn btn-outline btn-sm" title="Move up">↑</a>' if i > 0 else '<span class="btn btn-outline btn-sm" style="opacity:.25;pointer-events:none">↑</span>'
+                down_btn = f'<a href="/team/move/{m["id"]}/down" class="btn btn-outline btn-sm" title="Move down">↓</a>' if i < last else '<span class="btn btn-outline btn-sm" style="opacity:.25;pointer-events:none">↓</span>'
+                linkedin = f' · <a href="{esc(m["linkedin"])}" target=_blank style="color:#0a66c2">LinkedIn ↗</a>' if m.get("linkedin") else ""
+                rows += f"""
+<div class=card>
+  <div class=report-row style="align-items:center">
+    <div style="display:flex;gap:1rem;align-items:center">
+      <div style="display:flex;flex-direction:column;gap:.25rem">{up_btn}{down_btn}</div>
+      {avatar}
+      <div>
+        <div class=report-title>{i+1}. {esc(m.get('name',''))}</div>
+        <div class=report-meta>{esc(m.get('title',''))}{linkedin}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
+      <a href="/team/edit/{m['id']}" class="btn btn-outline btn-sm">Edit</a>
+      <a href="/team/delete/{m['id']}" class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="return confirm('Remove {esc(m.get('name',''))} from the team?')">Remove</a>
+    </div>
+  </div>
+</div>"""
+        body = f"""
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+  <h2 style="margin:0">Team Members</h2>
+  <a href="/team/new" class="btn btn-primary">+ Add Member</a>
+</div>
+{alert_html}
+<p style="font-size:.85rem;color:#6b6b80;margin-bottom:1.25rem">Members appear on the public Team page in this order. Use ↑↓ to reorder — changes push to the live site automatically.</p>
+{rows}"""
+        self.send_html(page("Team", body, "team"))
+
+    def handle_team_form(self, member_id=None, alert=""):
+        m = {}
+        if member_id:
+            m = next((x for x in load_team() if x.get("id") == member_id), {})
+            if not m:
+                self.redirect("/team")
+                return
+        heading = "Edit Team Member" if member_id else "Add Team Member"
+        photo_note = ""
+        if m.get("photo"):
+            photo_note = f'<p class=hint style="margin-top:.4rem">Current photo: <img src="/photo/{esc(m["photo"])}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-left:.3rem" alt=""> — upload a new file to replace it.</p>'
+        body = f"""
+<h2>{heading}</h2>
+{alert}
+<form method=POST action=/team/save enctype="multipart/form-data" style="max-width:640px">
+  <input type=hidden name=member_id value="{esc(m.get('id',''))}">
+  <div class=card>
+    <div class=form-grid>
+      <div class=form-group>
+        <label>Full name <span style="color:#dc2626">*</span></label>
+        <input type=text name=name required value="{esc(m.get('name',''))}" placeholder="Jane Rivera">
+      </div>
+      <div class=form-group>
+        <label>Title / role <span style="color:#dc2626">*</span></label>
+        <input type=text name=title required value="{esc(m.get('title',''))}" placeholder="Lead Budget Analyst">
+      </div>
+      <div class="form-group full">
+        <label>Bio</label>
+        <textarea name=bio rows=4 placeholder="Two or three sentences about who they are and what they cover.">{esc(m.get('bio',''))}</textarea>
+      </div>
+      <div class="form-group full">
+        <label>LinkedIn URL</label>
+        <input type=url name=linkedin value="{esc(m.get('linkedin',''))}" placeholder="https://www.linkedin.com/in/janerivera">
+      </div>
+      <div class="form-group full">
+        <label>Photo</label>
+        <input type=file name=photo accept="image/png,image/jpeg,image/webp">
+        <p class=hint>Square photos look best. JPG, PNG, or WebP.</p>
+        {photo_note}
+      </div>
+    </div>
+  </div>
+  <div class=actions-bar>
+    <button type=submit class="btn btn-green">{"Save Changes" if member_id else "Add to Team"}</button>
+    <a href=/team class="btn btn-outline">Cancel</a>
+  </div>
+</form>"""
+        self.send_html(page(heading, body, "team"))
+
+    def handle_team_save(self, fields, files):
+        team = load_team()
+        member_id = fields.get("member_id", "").strip()
+        name = fields.get("name", "").strip()
+        if not name:
+            self.redirect("/team")
+            return
+
+        if member_id:
+            member = next((x for x in team if x.get("id") == member_id), None)
+            if member is None:
+                self.redirect("/team")
+                return
+        else:
+            member_id = slugify(name) or "member"
+            existing = {x.get("id") for x in team}
+            base_id, n = member_id, 2
+            while member_id in existing:
+                member_id = f"{base_id}-{n}"
+                n += 1
+            member = {"id": member_id, "order": len(team) + 1}
+            team.append(member)
+
+        member["name"] = name
+        member["title"] = fields.get("title", "").strip()
+        member["bio"] = fields.get("bio", "").strip()
+        member["linkedin"] = fields.get("linkedin", "").strip()
+
+        if "photo" in files:
+            filename, content = files["photo"]
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in (".jpg", ".jpeg", ".png", ".webp") and content:
+                os.makedirs(TEAM_PHOTO_DIR, exist_ok=True)
+                old = member.get("photo")
+                if old:
+                    old_path = os.path.join(BASE, "static", old.replace("/", os.sep))
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                photo_name = f"{member_id}{ext}"
+                with open(os.path.join(TEAM_PHOTO_DIR, photo_name), "wb") as f:
+                    f.write(content)
+                member["photo"] = f"images/team/{photo_name}"
+
+        save_team(team)
+        ok, err = git_push_all(f"Team: save member {name}")
+        alert = '<div class="alert alert-green">✓ Team member saved and pushed. Live in ~2 min.</div>' if ok else f'<div class="alert alert-red">Saved locally but push failed: {esc(err)}</div>'
+        self.handle_team_list(alert=alert)
+
+    def handle_team_delete(self, member_id):
+        team = load_team()
+        member = next((x for x in team if x.get("id") == member_id), None)
+        if member:
+            if member.get("photo"):
+                photo_path = os.path.join(BASE, "static", member["photo"].replace("/", os.sep))
+                if os.path.exists(photo_path):
+                    os.remove(photo_path)
+            team.remove(member)
+            save_team(team)
+            git_push_all(f"Team: remove member {member.get('name', member_id)}")
+        self.redirect("/team")
+
+    def handle_team_move(self, member_id, direction):
+        team = load_team()
+        idx = next((i for i, x in enumerate(team) if x.get("id") == member_id), None)
+        if idx is not None:
+            new_idx = idx - 1 if direction == "up" else idx + 1
+            if 0 <= new_idx < len(team):
+                team[idx], team[new_idx] = team[new_idx], team[idx]
+                save_team(team)
+                git_push_all(f"Team: reorder members")
+        self.redirect("/team")
 
     def handle_applications(self):
         cfg = load_config()

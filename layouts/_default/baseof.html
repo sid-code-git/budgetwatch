@@ -27,12 +27,33 @@
         <a href="{{ .Site.BaseURL }}reports/">Reports</a>
         <a href="{{ .Site.BaseURL }}briefs/">Policy Briefs</a>
         <a href="{{ .Site.BaseURL }}map/">Map</a>
+        <a href="{{ .Site.BaseURL }}team/">Team</a>
         <a href="{{ .Site.BaseURL }}about/">About</a>
         <a href="{{ .Site.BaseURL }}apply/">Apply</a>
       </nav>
+      <button class="search-btn" id="search-btn" aria-label="Search reports and briefs" title="Search (press /)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="10.5" cy="10.5" r="7" stroke="currentColor" stroke-width="2"/>
+          <line x1="15.8" y1="15.8" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
       <button class="mobile-menu-btn" onclick="document.querySelector('.main-nav').classList.toggle('open')">☰</button>
     </div>
   </header>
+
+  <div class="search-overlay" id="search-overlay" hidden>
+    <div class="search-panel">
+      <div class="search-input-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="7" stroke="currentColor" stroke-width="2"/>
+          <line x1="15.8" y1="15.8" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input type="search" id="search-input" placeholder="Search reports and briefs…" autocomplete="off" aria-label="Search">
+        <button class="search-close" id="search-close" aria-label="Close search">Esc</button>
+      </div>
+      <div class="search-results" id="search-results" data-index-url="{{ "index.json" | absURL }}"></div>
+    </div>
+  </div>
 
   <main>{{ block "main" . }}{{ end }}</main>
 
@@ -54,6 +75,7 @@
         <a href="{{ .Site.BaseURL }}reports/">Reports</a>
         <a href="{{ .Site.BaseURL }}briefs/">Policy Briefs</a>
         <a href="{{ .Site.BaseURL }}map/">Map</a>
+        <a href="{{ .Site.BaseURL }}team/">Team</a>
         <a href="{{ .Site.BaseURL }}about/">About</a>
         <a href="{{ .Site.BaseURL }}apply/">Apply</a>
         <a href="{{ .Site.BaseURL }}feed.xml">RSS</a>
@@ -64,6 +86,72 @@
 
   <script>
   (function () {
+    var overlay = document.getElementById('search-overlay');
+    var input = document.getElementById('search-input');
+    var results = document.getElementById('search-results');
+    var indexData = null;
+
+    function openSearch() {
+      overlay.hidden = false;
+      document.body.style.overflow = 'hidden';
+      input.value = '';
+      results.innerHTML = '<div class="search-hint">Type to search all reports and policy briefs</div>';
+      setTimeout(function () { input.focus(); }, 30);
+      if (!indexData) {
+        fetch(results.dataset.indexUrl)
+          .then(function (r) { return r.json(); })
+          .then(function (d) { indexData = d || []; })
+          .catch(function () { indexData = []; });
+      }
+    }
+    function closeSearch() {
+      overlay.hidden = true;
+      document.body.style.overflow = '';
+    }
+    function escHtml(s) {
+      return s.replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+    }
+    function render(q) {
+      if (!q.trim()) {
+        results.innerHTML = '<div class="search-hint">Type to search all reports and policy briefs</div>';
+        return;
+      }
+      if (!indexData) {
+        results.innerHTML = '<div class="search-hint">Loading…</div>';
+        return;
+      }
+      var terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+      var hits = indexData.filter(function (it) {
+        var hay = (it.title + ' ' + it.meta + ' ' + it.summary).toLowerCase();
+        return terms.every(function (t) { return hay.indexOf(t) !== -1; });
+      }).slice(0, 10);
+      if (!hits.length) {
+        results.innerHTML = '<div class="search-hint">No matches for “' + escHtml(q) + '”</div>';
+        return;
+      }
+      results.innerHTML = hits.map(function (it) {
+        return '<a class="search-result" href="' + escHtml(it.url) + '">' +
+          '<span class="search-result-type ' + (it.type === 'Report' ? 'sr-report' : 'sr-brief') + '">' + it.type + '</span>' +
+          '<span class="search-result-body"><span class="search-result-title">' + escHtml(it.title) + '</span>' +
+          '<span class="search-result-meta">' + escHtml(it.meta) + '</span></span></a>';
+      }).join('');
+    }
+    if (overlay && input) {
+      document.getElementById('search-btn').addEventListener('click', openSearch);
+      document.getElementById('search-close').addEventListener('click', closeSearch);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) closeSearch(); });
+      input.addEventListener('input', function () { render(input.value); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !overlay.hidden) closeSearch();
+        if (e.key === '/' && overlay.hidden && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) {
+          e.preventDefault();
+          openSearch();
+        }
+      });
+    }
+
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var header = document.querySelector('.site-header');

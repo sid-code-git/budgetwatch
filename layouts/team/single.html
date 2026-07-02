@@ -1,0 +1,109 @@
+{{ define "main" }}
+
+<div class="page-hero">
+  <div class="content-inner">
+    <div class="masthead-label">The People Behind the Reports</div>
+    <h1>Our Team</h1>
+    <p>Budget Watch is powered by researchers who believe every taxpayer deserves to know where the money goes. Every report carries a byline, and every analyst stands behind their work.</p>
+  </div>
+</div>
+
+<div class="content-inner team-body">
+  {{ $team := sort .Site.Data.team "order" }}
+  {{ if $team }}
+  <div class="team-grid">
+    {{ range $team }}
+    {{ $m := . }}
+    <div class="team-card">
+      {{ if .photo }}
+      <img class="team-photo" src="{{ .photo | absURL }}" alt="Portrait of {{ .name }}" loading="lazy">
+      {{ else }}
+      <div class="team-photo team-photo-fallback" aria-hidden="true">
+        {{ $parts := split .name " " }}{{ range first 2 $parts }}{{ substr . 0 1 }}{{ end }}
+      </div>
+      {{ end }}
+      <div class="team-info">
+        <h3 class="team-name">{{ .name }}</h3>
+        <div class="team-title">{{ .title }}</div>
+        {{ with .bio }}<p class="team-bio">{{ . }}</p>{{ end }}
+        {{ with .linkedin }}
+        <a class="team-linkedin" href="{{ . }}" target="_blank" rel="noopener" aria-label="LinkedIn profile of {{ $m.name }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.55C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+          LinkedIn
+        </a>
+        {{ end }}
+      </div>
+    </div>
+    {{ end }}
+  </div>
+  {{ else }}
+  <div class="team-empty">
+    <p>Our team page is coming soon.</p>
+    <a href="{{ .Site.BaseURL }}apply/" class="btn-primary" style="margin-top:1rem">Want to join us? →</a>
+  </div>
+  {{ end }}
+
+  <div class="team-cta">
+    <h2>Want your name here?</h2>
+    <p>We're always looking for detail-oriented researchers who want real published work with their byline on it.</p>
+    <a href="{{ .Site.BaseURL }}apply/" class="btn-primary">Become an Analyst →</a>
+  </div>
+</div>
+
+<style>
+.team-body { padding: 3.5rem 0 5rem; }
+.team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.team-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .35s var(--ease), transform .35s var(--ease), border-color .35s var(--ease);
+}
+.team-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); border-color: var(--accent); }
+.team-photo {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 1.25rem;
+  display: block;
+  border: 3px solid #d1fae5;
+  box-shadow: 0 4px 16px rgba(5,150,105,.15);
+}
+.team-photo-fallback {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #047857, #059669);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.team-name { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; letter-spacing: -.01em; margin-bottom: .2rem; }
+.team-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); margin-bottom: .8rem; }
+.team-bio { font-family: var(--font-serif); font-size: .9rem; color: var(--ink-2); line-height: 1.7; margin-bottom: 1rem; }
+.team-linkedin {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .78rem; font-weight: 600; color: #0a66c2;
+  border: 1.5px solid #d5e5f5; border-radius: 100px;
+  padding: .35rem .9rem;
+  transition: background .2s var(--ease), border-color .2s var(--ease);
+}
+.team-linkedin:hover { background: #eef5fc; border-color: #0a66c2; opacity: 1; }
+.team-empty { text-align: center; padding: 4rem 0; color: var(--ink-3); }
+.team-cta {
+  margin-top: 4rem;
+  text-align: center;
+  background: linear-gradient(135deg, #022c22, #065f46);
+  border-radius: var(--r);
+  padding: 3rem 2rem;
+  color: white;
+}
+.team-cta h2 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; margin-bottom: .5rem; }
+.team-cta p { color: rgba(255,255,255,.7); max-width: 460px; margin: 0 auto 1.5rem; font-family: var(--font-serif); line-height: 1.7; }
+@media (max-width: 900px) { .team-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .team-grid { grid-template-columns: 1fr; } }
+</style>
+{{ end }}
