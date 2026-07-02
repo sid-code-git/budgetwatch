@@ -61,5 +61,74 @@
       <p class="footer-tagline">You pay taxes. You deserve to know where the money goes.</p>
     </div>
   </footer>
+
+  <script>
+  (function () {
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var header = document.querySelector('.site-header');
+    window.addEventListener('scroll', function () {
+      header.classList.toggle('scrolled', window.scrollY > 8);
+    }, { passive: true });
+
+    var targets = document.querySelectorAll(
+      '.featured-report, .report-card, .brief-home-card, .brief-card, .method-card, ' +
+      '.about-do-card, .about-method-step, .about-cta-card, .trait-card, .topic-card, ' +
+      '.featured-brief, .section-header-row, .apply-banner-inner, .about-impact-item'
+    );
+    if (!reduced) {
+      var pending = [];
+      targets.forEach(function (el, i) {
+        el.classList.add('reveal');
+        el.style.transitionDelay = (Math.min(i % 6, 4) * 60) + 'ms';
+        pending.push(el);
+      });
+
+      var counters = [];
+      document.querySelectorAll('.stat-num, .page-hero-stat-num, .about-impact-num').forEach(function (el) {
+        var m = el.textContent.trim().match(/^(\$?)(\d+)(\+?)$/);
+        if (!m || parseInt(m[2], 10) === 0) return;
+        counters.push({ el: el, prefix: m[1], target: parseInt(m[2], 10), suffix: m[3], done: false });
+        el.textContent = m[1] + '0' + m[3];
+      });
+
+      function countUp(c) {
+        var start = null, dur = 900;
+        function tick(ts) {
+          if (!start) start = ts;
+          var p = Math.min((ts - start) / dur, 1);
+          var eased = 1 - Math.pow(1 - p, 3);
+          c.el.textContent = c.prefix + Math.round(c.target * eased) + c.suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      function check() {
+        var vh = window.innerHeight || document.documentElement.clientHeight || Infinity;
+        pending = pending.filter(function (el) {
+          if (el.getBoundingClientRect().top < vh - 40) {
+            el.classList.add('in');
+            return false;
+          }
+          return true;
+        });
+        counters.forEach(function (c) {
+          if (!c.done && c.el.getBoundingClientRect().top < vh) {
+            c.done = true;
+            countUp(c);
+          }
+        });
+        if (!pending.length && counters.every(function (c) { return c.done; })) {
+          window.removeEventListener('scroll', check);
+          window.removeEventListener('resize', check);
+        }
+      }
+      window.addEventListener('scroll', check, { passive: true });
+      window.addEventListener('resize', check);
+      check();
+    }
+  })();
+  </script>
 </body>
 </html>
