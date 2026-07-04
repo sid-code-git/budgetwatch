@@ -65,7 +65,10 @@ def git_push_all(message):
     return True, ""
 
 def parse_multipart(body, boundary):
-    """Minimal multipart/form-data parser. Returns (fields dict, files dict)."""
+    """Minimal multipart/form-data parser.
+
+    Returns (fields, files): fields is a MultiDict (supports repeated names),
+    files maps name -> list of (filename, bytes) for non-empty uploads."""
     fields, files = {}, {}
     delim = b"--" + boundary
     for part in body.split(delim):
@@ -81,11 +84,47 @@ def parse_multipart(body, boundary):
             continue
         name = name_m.group(1)
         file_m = re.search(r'filename="([^"]*)"', head_text)
-        if file_m and file_m.group(1):
-            files[name] = (os.path.basename(file_m.group(1)), content)
+        if file_m is not None:
+            if file_m.group(1) and content:
+                files.setdefault(name, []).append((os.path.basename(file_m.group(1)), content))
         else:
-            fields[name] = content.decode("utf-8", "replace")
-    return fields, files
+            fields.setdefault(name, []).append(content.decode("utf-8", "replace"))
+    return MultiDict(fields), files
+
+UPLOAD_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".pdf"}
+
+def save_uploads(files, field, slug):
+    """Save uploaded graphics under static/images/uploads/<slug>/.
+    Returns list of (original name, site-relative url, ext)."""
+    saved = []
+    for filename, content in files.get(field, []):
+        ext = os.path.splitext(filename)[1].lower()
+        if ext not in UPLOAD_EXTS or not content:
+            continue
+        updir = os.path.join(BASE, "static", "images", "uploads", slug)
+        os.makedirs(updir, exist_ok=True)
+        base = slugify(os.path.splitext(filename)[0]) or "file"
+        name, n = f"{base}{ext}", 2
+        while os.path.exists(os.path.join(updir, name)):
+            name = f"{base}-{n}{ext}"
+            n += 1
+        with open(os.path.join(updir, name), "wb") as f:
+            f.write(content)
+        saved.append((filename, f"/images/uploads/{slug}/{name}", ext))
+    return saved
+
+def graphics_md(saved):
+    """Markdown section embedding uploaded graphics (images inline, PDFs as links)."""
+    if not saved:
+        return ""
+    out = "\n\n## Charts & Graphics\n\n"
+    for original, url, ext in saved:
+        label = os.path.splitext(original)[0]
+        if ext == ".pdf":
+            out += f"📄 [{label} (PDF)]({url})\n\n"
+        else:
+            out += f"![{label}]({url})\n\n"
+    return out
 
 def load_config():
     try:
@@ -558,7 +597,7 @@ def render_brief_form(alert=""):
     return f"""
 <h2>New Policy Brief</h2>
 {alert}
-<form method=POST action=/briefs/save>
+<form method=POST action=/briefs/save enctype="multipart/form-data">
 
   <div class=card>
     <div class=card-header><span class=card-num>Meta</span><div><div class=card-title>Brief Info</div></div></div>
@@ -605,6 +644,15 @@ def render_brief_form(alert=""):
   </div>
 
   <div class=card>
+    <div class=card-header><span class=card-num>📎</span><div><div class=card-title>Graphics & Attachments</div><div class=card-subtitle>Charts, tables, scans — images appear in a "Charts & Graphics" section; PDFs become download links</div></div></div>
+    <div class=form-group>
+      <label>Upload files</label>
+      <input type=file name=graphics multiple accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/pdf">
+      <p class=hint>You can select multiple files. JPG, PNG, WebP, GIF, SVG, or PDF.</p>
+    </div>
+  </div>
+
+  <div class=card>
     <div class=form-group><label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type=checkbox name=publish value=true> Publish immediately (uncheck to save as draft)</label></div>
     <div style="margin-top:.75rem"><label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type=checkbox name=push value=true checked> Push to GitHub now</label></div>
   </div>
@@ -637,7 +685,7 @@ def render_new_form(alert=""):
 <h2>New Report</h2>
 {alert}
 {toc}
-<form method=POST action=/save>
+<form method=POST action=/save enctype="multipart/form-data">
 
 <!-- ── META ── -->
 <div class=card id=s-meta>
@@ -768,6 +816,16 @@ def render_new_form(alert=""):
   <div class=form-group><textarea name=conclusion rows=5 placeholder="Springfield is caught in a fiscal squeeze familiar to many small post-industrial towns: a shrinking tax base, rising legacy costs, and deferred infrastructure. Without structural changes, the town is likely to face a service-level crisis within 5–7 years..."></textarea></div>
 </div>
 
+<!-- ── GRAPHICS ── -->
+<div class=card>
+  <div class=card-header><span class=card-num>📎</span><div><div class=card-title>Graphics & Attachments</div><div class=card-subtitle>Charts, tables, scans — images appear in a \"Charts & Graphics\" section; PDFs become download links</div></div></div>
+  <div class=form-group>
+    <label>Upload files</label>
+    <input type=file name=graphics multiple accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/pdf">
+    <p class=hint>You can select multiple files. JPG, PNG, WebP, GIF, SVG, or PDF.</p>
+  </div>
+</div>
+
 <!-- ── PUBLISH ── -->
 <div class=card>
   <div class=form-group><label style="display:flex;align-items:center;gap:.5rem;cursor:pointer"><input type=checkbox name=publish value=true> Publish immediately (uncheck to save as draft)</label></div>
@@ -872,14 +930,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
 
         ctype = self.headers.get("Content-Type", "")
-        if path == "/team/save" and "multipart/form-data" in ctype:
+        if "multipart/form-data" in ctype and path in ("/team/save", "/save", "/briefs/save"):
             boundary_m = re.search(r'boundary=("?)([^";]+)\1', ctype)
             if not boundary_m:
                 self.send_html("<h1>Bad request</h1>", 400)
                 return
             raw_bytes = self.rfile.read(length)
             fields, files = parse_multipart(raw_bytes, boundary_m.group(2).encode())
-            self.handle_team_save(fields, files)
+            if path == "/team/save":
+                self.handle_team_save(fields, files)
+            elif path == "/save":
+                self.handle_save(fields, files)
+            else:
+                self.handle_brief_save(fields, files)
             return
 
         raw = self.rfile.read(length).decode()
@@ -963,14 +1026,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
             subprocess.run(["git", "push"], cwd=BASE)
         self.redirect("/briefs")
 
-    def handle_brief_save(self, data):
+    def handle_brief_save(self, data, files=None):
         title = data.get("title", "untitled")
         slug = slugify(title)
         content = build_brief_md(data)
+        uploads = save_uploads(files or {}, "graphics", slug)
+        content += graphics_md(uploads)
         path = write_brief(slug, content)
         alert = ""
         if data.get("push") == "true":
-            ok, err = git_push(path, f"Add brief: {title}")
+            ok, err = (git_push_all(f"Add brief: {title}") if uploads else git_push(path, f"Add brief: {title}"))
             alert = '<div class="alert alert-green">✓ Brief saved and pushed. Live in ~2 min.</div>' if ok else f'<div class="alert alert-red">Saved locally but push failed: {esc(err)}</div>'
         else:
             alert = '<div class="alert alert-green">✓ Brief saved locally.</div>'
@@ -1151,8 +1216,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         member["bio"] = fields.get("bio", "").strip()
         member["linkedin"] = fields.get("linkedin", "").strip()
 
-        if "photo" in files:
-            filename, content = files["photo"]
+        if files.get("photo"):
+            filename, content = files["photo"][0]
             ext = os.path.splitext(filename)[1].lower()
             if ext in (".jpg", ".jpeg", ".png", ".webp") and content:
                 os.makedirs(TEAM_PHOTO_DIR, exist_ok=True)
@@ -1599,12 +1664,14 @@ submitter_email: "{esc(d.get('submitter_email', ''))}"
             subprocess.run(["git", "push"], cwd=BASE)
         self.redirect("/")
 
-    def handle_save(self, data):
+    def handle_save(self, data, files=None):
         town  = data.get("town", "town")
         state = data.get("state", "xx").lower()
         fy    = data.get("fiscal_year", str(datetime.now().year))
         slug  = f"{slugify(town)}-{slugify(state)}-{fy}"
         content = build_report_md(data)
+        uploads = save_uploads(files or {}, "graphics", slug)
+        content += graphics_md(uploads)
         path = write_report(slug, content)
 
         msg = f"Add report: {town}, {state.upper()} FY{fy}"
@@ -1613,7 +1680,7 @@ submitter_email: "{esc(d.get('submitter_email', ''))}"
 
         alert = ""
         if data.get("push") == "true":
-            ok, err = git_push(path, msg)
+            ok, err = (git_push_all(msg) if uploads else git_push(path, msg))
             if ok:
                 alert = '<div class="alert alert-green">✓ Report saved and pushed to GitHub. Live in ~2 min.</div>'
             else:
