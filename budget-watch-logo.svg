@@ -1,0 +1,49 @@
+<svg width="1000" height="1000" viewBox="0 0 680 680" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Budget Watch logo</title>
+  <desc>Square social media logo for Budget Watch</desc>
+
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#022c22"/>
+      <stop offset="55%" stop-color="#065f46"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="icon-g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7"/>
+      <stop offset="100%" stop-color="#a7f3d0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="680" height="680" fill="url(#bg)"/>
+
+  <!-- Subtle grid texture -->
+  <g opacity="0.04">
+    <line x1="0" y1="170" x2="680" y2="170" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="340" x2="680" y2="340" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="510" x2="680" y2="510" stroke="white" stroke-width="1"/>
+    <line x1="170" y1="0" x2="170" y2="680" stroke="white" stroke-width="1"/>
+    <line x1="340" y1="0" x2="340" y2="680" stroke="white" stroke-width="1"/>
+    <line x1="510" y1="0" x2="510" y2="680" stroke="white" stroke-width="1"/>
+  </g>
+
+  <!-- Magnifying glass circle -->
+  <circle cx="320" cy="250" r="110" fill="none" stroke="url(#icon-g)" stroke-width="28"/>
+
+  <!-- Bar chart inside the circle -->
+  <rect x="272" y="286" width="30" height="50" rx="4" fill="url(#icon-g)"/>
+  <rect x="314" y="250" width="30" height="86" rx="4" fill="url(#icon-g)"/>
+  <rect x="356" y="268" width="30" height="68" rx="4" fill="url(#icon-g)"/>
+
+  <!-- Handle -->
+  <line x1="404" y1="336" x2="464" y2="396" stroke="url(#icon-g)" stroke-width="30" stroke-linecap="round"/>
+
+  <!-- Divider line -->
+  <line x1="180" y1="428" x2="500" y2="428" stroke="#6ee7b7" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- Wordmark -->
+  <text x="340" y="460" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="68" font-weight="700" fill="white" letter-spacing="-2">Budget Watch</text>
+
+  <!-- Tagline -->
+  <text x="340" y="516" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="400" fill="#6ee7b7" letter-spacing="3">PUBLIC BUDGET JOURNALISM</text>
+</svg>

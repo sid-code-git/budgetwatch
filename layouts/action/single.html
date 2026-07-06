@@ -1,0 +1,662 @@
+{{ define "main" }}
+
+<!-- ── HERO ── -->
+<div class="page-hero action-hero">
+  <div class="content-inner">
+    <div class="masthead-label">From Reader to Changemaker</div>
+    <h1>You found the numbers.<br>Now make them count.</h1>
+    <p>Reading a budget is where accountability starts, not where it ends. This is the playbook for turning what you learned into real change in your town, grounded in what actually works.</p>
+  </div>
+</div>
+
+<!-- ── LEVERAGE STATS ── -->
+<section class="action-leverage">
+  <div class="content-inner">
+    <div class="action-leverage-head">
+      <div class="section-eyebrow">Why your voice matters more than you think</div>
+      <h2 class="section-heading">Local government is where one person still moves the needle.</h2>
+      <p>Turnout in city and town elections is a fraction of the presidential race. Fewer people paying attention means each engaged resident carries far more weight than they realize.</p>
+    </div>
+    <div class="action-stats">
+      <div class="action-stat">
+        <div class="action-stat-num" data-count="27" data-suffix="%">27%</div>
+        <div class="action-stat-label">Typical <em>ceiling</em> for voter turnout in U.S. local elections, often as low as 15%.</div>
+      </div>
+      <div class="action-stat">
+        <div class="action-stat-num" data-count="20" data-suffix="/30">20/30</div>
+        <div class="action-stat-label">Of America's 30 largest cities had mayoral turnout under 15% in one landmark study.</div>
+      </div>
+      <div class="action-stat">
+        <div class="action-stat-num" data-count="1" data-suffix="">1</div>
+        <div class="action-stat-label">The number of prepared residents it takes to change what gets asked in a public meeting.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── THE PATHWAY ── -->
+<section class="action-pathway">
+  <div class="content-inner">
+    <div class="action-pathway-head">
+      <div class="section-eyebrow">The Playbook</div>
+      <h2 class="section-heading">Seven moves that create real change.</h2>
+      <p>Work through them in order or jump to what you need. Mark each one done, your progress saves on this device so you can come back to it.</p>
+    </div>
+
+    <!-- Progress tracker -->
+    <div class="action-progress" id="action-progress">
+      <div class="action-ring-wrap">
+        <svg width="120" height="120" viewBox="0 0 120 120" class="action-ring" aria-hidden="true">
+          <circle cx="60" cy="60" r="52" class="action-ring-track"/>
+          <circle cx="60" cy="60" r="52" class="action-ring-fill" id="action-ring-fill"/>
+        </svg>
+        <div class="action-ring-text"><span id="action-ring-count">0</span><span class="action-ring-total">/7</span></div>
+      </div>
+      <div class="action-progress-copy">
+        <h3 id="action-progress-title">Start your action plan</h3>
+        <p id="action-progress-sub">Check off each step as you take it. Everything is saved locally on your device, nothing is sent anywhere.</p>
+        <button type="button" class="action-reset" id="action-reset" hidden>Reset my progress</button>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="action-steps">
+
+      <!-- 1 -->
+      <article class="action-step" data-step="documents">
+        <div class="action-step-side">
+          <span class="action-step-num">01</span>
+          <button type="button" class="action-check" data-step="documents" aria-pressed="false">
+            <span class="action-check-box"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M5 12.5l4 4 10-10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="action-check-label">Mark done</span>
+          </button>
+        </div>
+        <div class="action-step-body">
+          <h3>Get the documents</h3>
+          <p class="action-why"><strong>Why it works:</strong> You can't hold anyone accountable to numbers you can't see. Every state has a public records law that gives you the right to request budgets, contracts, audits, and emails. These laws are separate from the federal FOIA and each state sets its own rules and deadlines.</p>
+          <ul class="action-do">
+            <li>Ask for the adopted budget, the most recent audit, and any contract or line item you have questions about.</li>
+            <li>Put it in writing. A written request starts the legal clock and creates a paper trail.</li>
+            <li>Be specific about what you want and the date range, vague requests get delayed.</li>
+          </ul>
+
+          <!-- TOOL: records request generator -->
+          <div class="action-tool">
+            <div class="action-tool-head">
+              <span class="action-tool-tag">Free tool</span>
+              <h4>Public records request generator</h4>
+            </div>
+            <div class="action-tool-grid">
+              <label>Town or agency name<input type="text" id="rr-town" placeholder="Town of Millbrook"></label>
+              <label>Your name<input type="text" id="rr-name" placeholder="Jane Rivera"></label>
+              <label class="action-tool-full">What records do you want?<input type="text" id="rr-what" placeholder="The FY2026 adopted budget and the most recent independent audit"></label>
+              <label>Your email<input type="email" id="rr-email" placeholder="jane@email.com"></label>
+              <div class="action-tool-actions">
+                <button type="button" class="btn-primary" id="rr-gen">Generate letter</button>
+              </div>
+            </div>
+            <div class="action-tool-out" id="rr-out-wrap" hidden>
+              <pre id="rr-output"></pre>
+              <button type="button" class="action-copy" data-copy="rr-output">Copy to clipboard</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 2 -->
+      <article class="action-step" data-step="calendar">
+        <div class="action-step-side">
+          <span class="action-step-num">02</span>
+          <button type="button" class="action-check" data-step="calendar" aria-pressed="false">
+            <span class="action-check-box"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M5 12.5l4 4 10-10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="action-check-label">Mark done</span>
+          </button>
+        </div>
+        <div class="action-step-body">
+          <h3>Learn the budget calendar</h3>
+          <p class="action-why"><strong>Why it works:</strong> The single biggest mistake residents make is showing up at the final vote, when everything is already decided. Research on budget engagement is clear: input given early, before the numbers harden, is the input that actually changes outcomes.</p>
+          <div class="action-timeline">
+            <div class="action-phase">
+              <div class="action-phase-dot">1</div>
+              <div class="action-phase-body"><h5>Departments draft requests</h5><p>Months before the vote. <strong>Ask questions now</strong> while priorities are still being set.</p></div>
+            </div>
+            <div class="action-phase">
+              <div class="action-phase-dot">2</div>
+              <div class="action-phase-body"><h5>Proposed budget drops</h5><p>The manager or mayor publishes a draft. <strong>Read it the day it's released.</strong></p></div>
+            </div>
+            <div class="action-phase">
+              <div class="action-phase-dot">3</div>
+              <div class="action-phase-body"><h5>Public hearings</h5><p>Your formal window to speak on the record. <strong>Show up and comment.</strong></p></div>
+            </div>
+            <div class="action-phase">
+              <div class="action-phase-dot">4</div>
+              <div class="action-phase-body"><h5>Council adopts</h5><p>The final vote. <strong>Track who voted how</strong> and hold them to it.</p></div>
+            </div>
+          </div>
+          <ul class="action-do">
+            <li>Find your town's budget calendar, it's usually on the finance or clerk's page.</li>
+            <li>Put every hearing date in your phone the day you find them.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- 3 -->
+      <article class="action-step" data-step="comment">
+        <div class="action-step-side">
+          <span class="action-step-num">03</span>
+          <button type="button" class="action-check" data-step="comment" aria-pressed="false">
+            <span class="action-check-box"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M5 12.5l4 4 10-10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="action-check-label">Mark done</span>
+          </button>
+        </div>
+        <div class="action-step-body">
+          <h3>Show up and speak</h3>
+          <p class="action-why"><strong>Why it works:</strong> Public comment is a one-way channel and officials aren't required to act on it, but it puts your concern on the public record, informs other residents, and signals that someone is watching. The most persuasive comments pair a hard number with a personal reason and a specific ask.</p>
+          <ul class="action-do">
+            <li>Keep it under two minutes, most bodies enforce a hard limit.</li>
+            <li>Lead with one fact from the budget, then why it matters to you, then exactly what you want.</li>
+            <li>Bring three neighbors. A line of speakers on one issue is impossible to ignore.</li>
+          </ul>
+
+          <!-- TOOL: comment builder -->
+          <div class="action-tool">
+            <div class="action-tool-head">
+              <span class="action-tool-tag">Free tool</span>
+              <h4>Public comment builder</h4>
+            </div>
+            <div class="action-tool-grid">
+              <label class="action-tool-full">The issue you're raising<input type="text" id="pc-issue" placeholder="the 43% jump in the police overtime line"></label>
+              <label class="action-tool-full">One fact or number from the budget<input type="text" id="pc-fact" placeholder="overtime rose from $1.2M to $1.7M in a single year"></label>
+              <label class="action-tool-full">Why it matters to you<input type="text" id="pc-why" placeholder="that's more than the entire parks budget my kids rely on"></label>
+              <label class="action-tool-full">What you're asking them to do<input type="text" id="pc-ask" placeholder="explain the increase publicly before the final vote"></label>
+              <div class="action-tool-actions">
+                <button type="button" class="btn-primary" id="pc-gen">Build my script</button>
+              </div>
+            </div>
+            <div class="action-tool-out" id="pc-out-wrap" hidden>
+              <pre id="pc-output"></pre>
+              <button type="button" class="action-copy" data-copy="pc-output">Copy to clipboard</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 4 -->
+      <article class="action-step" data-step="officials">
+        <div class="action-step-side">
+          <span class="action-step-num">04</span>
+          <button type="button" class="action-check" data-step="officials" aria-pressed="false">
+            <span class="action-check-box"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M5 12.5l4 4 10-10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="action-check-label">Mark done</span>
+          </button>
+        </div>
+        <div class="action-step-body">
+          <h3>Contact your officials directly</h3>
+          <p class="action-why"><strong>Why it works:</strong> At the local level your council member represents a few thousand people, not hundreds of thousands. A personal, specific message from a real constituent stands out because so few people ever send one. Email is fine; a phone call or a request for a ten-minute meeting is stronger.</p>
+          <ul class="action-do">
+            <li>Write to <em>your</em> representative, the one for your district, not the whole body.</li>
+            <li>Reference the exact line item and cite the page. It signals you've done the work.</li>
+            <li>Ask one clear question that needs an answer, then follow up if you don't get one.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- 5 -->
+      <article class="action-step" data-step="coalition">
+        <div class="action-step-side">
+          <span class="action-step-num">05</span>
+          <button type="button" class="action-check" data-step="coalition" aria-pressed="false">
+            <span class="action-check-box"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M5 12.5l4 4 10-10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="action-check-label">Mark done</span>
+          </button>
+        </div>
+        <div class="action-step-body">
+          <h3>Bring people with you</h3>
+          <p class="action-why"><strong>Why it works:</strong> One voice is a complaint; twenty voices are a constituency. Organizers have a saying, the more local you go, the fewer people it takes to win. A small, focused coalition can shift a town decision with resources a national campaign could never justify.</p>
+          <ul class="action-do">
+            <li>Start with the people already affected, the parents, the neighbors, the small businesses.</li>
+            <li>Pick one specific, winnable ask everyone can agree on.</li>
+            <li>Turn attention into a list: collect emails so you can mobilize the same people again.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- 6 -->
+      <article class="action-step" data-step="ballot">
+        <div class="action-step-side">
+          <span class="action-step-num">06</span>
+          <button type="button" class="action-check" data-step="ballot" aria-pressed="false">
+            <span class="action-check-box"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M5 12.5l4 4 10-10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="action-check-label">Mark done</span>
+          </button>
+        </div>
+        <div class="action-step-body">
+          <h3>Go to the ballot, or the seat</h3>
+          <p class="action-why"><strong>Why it works:</strong> Because local turnout is so low, a motivated voter is disproportionately powerful, and an open board seat is often uncontested. Many of the bodies that shape budgets, planning boards, finance committees, school boards, go begging for members.</p>
+          <ul class="action-do">
+            <li>Vote in every local and off-cycle election, that's where your ballot counts most.</li>
+            <li>Check for vacancies on local boards and commissions, many are appointed, not elected.</li>
+            <li>If no one good is running, consider it yourself. The bar to entry is lower than you think.</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- 7 -->
+      <article class="action-step" data-step="followup">
+        <div class="action-step-side">
+          <span class="action-step-num">07</span>
+          <button type="button" class="action-check" data-step="followup" aria-pressed="false">
+            <span class="action-check-box"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M5 12.5l4 4 10-10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="action-check-label">Mark done</span>
+          </button>
+        </div>
+        <div class="action-step-body">
+          <h3>Follow up and hold the line</h3>
+          <p class="action-why"><strong>Why it works:</strong> Officials count on public attention fading after the vote. Accountability is a habit, not a moment. The residents who get results are the ones who come back next cycle with receipts from the last one.</p>
+          <ul class="action-do">
+            <li>Save how each official voted and compare it to what they promised.</li>
+            <li>Write a short recap for your neighbors, a letter to the editor or a post keeps it alive.</li>
+            <li>Show up next budget season already knowing the story. Persistence is the whole game.</li>
+          </ul>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="action-final">
+  <div class="content-inner">
+    <div class="action-final-card">
+      <h2>Start with your own town.</h2>
+      <p>Find out if we've analyzed your community's budget, or ask us to. Accountability works best when someone local is watching.</p>
+      <div class="action-final-btns">
+        <a href="{{ .Site.BaseURL }}reports/" class="btn-primary">Read the reports</a>
+        <a href="{{ .Site.BaseURL }}apply/" class="btn-ghost btn-ghost-light">Become an analyst</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SOURCES ── -->
+<section class="action-sources">
+  <div class="content-inner">
+    <div class="section-eyebrow">Grounded in Research</div>
+    <h2 class="section-heading">Sources &amp; further reading</h2>
+    <div class="action-source-grid">
+      <a class="action-source" href="https://www.whovotesformayor.org/" target="_blank" rel="noopener">
+        <span class="action-source-title">Who Votes for Mayor? — Portland State University</span>
+        <span class="action-source-desc">Landmark study documenting single-digit and low-teens turnout in America's largest cities.</span>
+      </a>
+      <a class="action-source" href="https://icma.org/articles/pm-magazine/informed-empowered-and-engaged-citizen-participation-local-government-budgeting" target="_blank" rel="noopener">
+        <span class="action-source-title">Citizen Participation in Local Budgeting — ICMA</span>
+        <span class="action-source-desc">Why early, informed engagement outperforms showing up at the final hearing.</span>
+      </a>
+      <a class="action-source" href="https://www.ca-ilg.org/sites/main/files/file-attachments/public_engagement_in_budgeting.pdf" target="_blank" rel="noopener">
+        <span class="action-source-title">Public Engagement in Budgeting — Institute for Local Government</span>
+        <span class="action-source-desc">A practical field guide to the municipal budget cycle and where residents fit in.</span>
+      </a>
+      <a class="action-source" href="https://www.eff.org/issues/transparency/foia-how-to" target="_blank" rel="noopener">
+        <span class="action-source-title">Public Records How-To — Electronic Frontier Foundation</span>
+        <span class="action-source-desc">Plain-language guide to writing records requests that actually get answered.</span>
+      </a>
+      <a class="action-source" href="https://www.citizen.org/wp-content/uploads/how_to_file_a_foia_request.pdf" target="_blank" rel="noopener">
+        <span class="action-source-title">How to File a Records Request — Public Citizen</span>
+        <span class="action-source-desc">Step-by-step template and tips for individuals requesting government documents.</span>
+      </a>
+      <a class="action-source" href="https://ctb.ku.edu/en/table-of-contents/overview/model-for-community-change-and-improvement/lessons-learned/main" target="_blank" rel="noopener">
+        <span class="action-source-title">Community Tool Box — University of Kansas</span>
+        <span class="action-source-desc">Evidence-based lessons on organizing, coalitions, and driving community change.</span>
+      </a>
+    </div>
+    <p class="action-sources-note">Public records laws, budget calendars, and comment rules vary by state and town. Always confirm the specifics for your own community, these tools are a starting point, not legal advice.</p>
+  </div>
+</section>
+
+<style>
+/* ── Hero ── */
+.action-hero h1 { line-height: 1.05; }
+
+/* ── Leverage ── */
+.action-leverage { padding: 4.5rem 0; border-bottom: 1px solid var(--border); }
+.action-leverage-head { max-width: 680px; margin-bottom: 2.5rem; }
+.action-leverage-head p { font-family: var(--font-serif); font-size: 1.05rem; color: var(--ink-2); line-height: 1.8; margin-top: 1rem; }
+.action-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+.action-stat {
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 2rem 1.75rem;
+  border-top: 4px solid var(--accent);
+}
+.action-stat-num { font-family: var(--font-display); font-size: 3rem; font-weight: 700; letter-spacing: -.03em; color: var(--accent); line-height: 1; }
+.action-stat-label { font-family: var(--font-serif); font-size: .95rem; color: var(--ink-2); line-height: 1.65; margin-top: .85rem; }
+.action-stat-label em { font-style: italic; color: var(--ink); }
+
+/* ── Pathway ── */
+.action-pathway { padding: 4.5rem 0; background: var(--surface-2); }
+.action-pathway-head { max-width: 680px; margin-bottom: 2rem; }
+.action-pathway-head p { font-family: var(--font-serif); font-size: 1.05rem; color: var(--ink-2); line-height: 1.8; margin-top: 1rem; }
+
+/* Progress tracker */
+.action-progress {
+  display: flex; align-items: center; gap: 2rem;
+  background: linear-gradient(135deg, #022c22, #065f46);
+  border-radius: 16px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 2.5rem;
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+.action-ring-wrap { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+.action-ring { transform: rotate(-90deg); }
+.action-ring-track { fill: none; stroke: rgba(255,255,255,.15); stroke-width: 9; }
+.action-ring-fill {
+  fill: none; stroke: #6ee7b7; stroke-width: 9; stroke-linecap: round;
+  stroke-dasharray: 326.7; stroke-dashoffset: 326.7;
+  transition: stroke-dashoffset .7s var(--ease);
+}
+.action-ring-text {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.7rem;
+}
+.action-ring-total { color: rgba(255,255,255,.5); font-size: 1.1rem; }
+.action-progress-copy h3 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; margin-bottom: .35rem; }
+.action-progress-copy p { color: rgba(255,255,255,.7); font-size: .92rem; line-height: 1.6; max-width: 460px; }
+.action-reset {
+  margin-top: .85rem; font-size: .78rem; font-weight: 600; color: #6ee7b7;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(110,231,183,.3);
+  border-radius: 100px; padding: .35rem .9rem; cursor: pointer; transition: background .2s var(--ease);
+}
+.action-reset:hover { background: rgba(255,255,255,.16); }
+
+/* Steps */
+.action-steps { display: flex; flex-direction: column; gap: 1.25rem; }
+.action-step {
+  display: grid; grid-template-columns: 130px 1fr; gap: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .35s var(--ease), border-color .35s var(--ease);
+}
+.action-step:hover { box-shadow: var(--shadow-md); }
+.action-step.done { border-color: var(--accent); }
+.action-step-side {
+  background: var(--surface-2);
+  border-right: 1.5px solid var(--border);
+  padding: 1.75rem 1.25rem;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1rem;
+  transition: background .35s var(--ease);
+}
+.action-step.done .action-step-side { background: linear-gradient(160deg, #ecfdf5, #d1fae5); border-right-color: #a7f3d0; }
+.action-step-num { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; color: var(--ink-3); letter-spacing: -.03em; transition: color .35s var(--ease); }
+.action-step.done .action-step-num { color: var(--accent); }
+.action-check {
+  display: inline-flex; align-items: center; gap: .45rem;
+  background: none; border: none; cursor: pointer; padding: 0; color: var(--ink-3);
+  font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  transition: color .2s var(--ease);
+}
+.action-check:hover { color: var(--accent); }
+.action-check-box {
+  width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: white; background: var(--surface); transition: background .2s var(--ease), border-color .2s var(--ease);
+}
+.action-check-box svg { opacity: 0; transform: scale(.5); transition: opacity .2s var(--ease), transform .2s var(--ease); }
+.action-check[aria-pressed="true"] { color: var(--accent); }
+.action-check[aria-pressed="true"] .action-check-box { background: var(--accent); border-color: var(--accent); }
+.action-check[aria-pressed="true"] .action-check-box svg { opacity: 1; transform: scale(1); }
+
+.action-step-body { padding: 1.75rem 2rem; }
+.action-step-body h3 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: .75rem; }
+.action-why { font-family: var(--font-serif); font-size: 1rem; color: var(--ink-2); line-height: 1.75; margin-bottom: 1rem; }
+.action-why strong { color: var(--ink); font-family: var(--font); font-weight: 700; font-size: .82rem; text-transform: uppercase; letter-spacing: .05em; }
+.action-do { list-style: none; padding: 0; display: flex; flex-direction: column; gap: .55rem; }
+.action-do li { font-size: .92rem; color: var(--ink-2); line-height: 1.6; padding-left: 1.4rem; position: relative; }
+.action-do li::before { content: "→"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+.action-do li em { font-style: italic; color: var(--ink); }
+
+/* Budget calendar timeline */
+.action-timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 1.25rem 0 1.25rem; }
+.action-phase { position: relative; padding: 0 1rem 0 0; }
+.action-phase-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .85rem; margin-bottom: .7rem; position: relative; z-index: 1;
+}
+.action-phase::after {
+  content: ""; position: absolute; top: 15px; left: 30px; right: 6px; height: 2px;
+  background: repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 12px); opacity: .4;
+}
+.action-phase:last-child::after { display: none; }
+.action-phase-body h5 { font-size: .85rem; font-weight: 700; margin-bottom: .2rem; letter-spacing: -.01em; }
+.action-phase-body p { font-size: .8rem; color: var(--ink-3); line-height: 1.5; }
+.action-phase-body p strong { color: var(--accent); font-weight: 700; }
+
+/* Interactive tools */
+.action-tool {
+  margin-top: 1.5rem;
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+.action-tool-head { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.1rem; }
+.action-tool-tag { font-size: .64rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #065f46; background: #a7f3d0; padding: .22rem .6rem; border-radius: 100px; }
+.action-tool-head h4 { font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; }
+.action-tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+.action-tool-grid label { display: flex; flex-direction: column; gap: .3rem; font-size: .78rem; font-weight: 600; color: var(--ink-2); }
+.action-tool-full { grid-column: 1 / -1; }
+.action-tool-grid input {
+  font-family: var(--font); font-size: .9rem; padding: .6rem .8rem;
+  border: 1.5px solid #cdefd9; border-radius: 8px; background: white; color: var(--ink); outline: none;
+  transition: border-color .15s, box-shadow .15s; font-weight: 400;
+}
+.action-tool-grid input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.action-tool-actions { grid-column: 1 / -1; }
+.action-tool-out { margin-top: 1.1rem; }
+.action-tool-out pre {
+  background: #022c22; color: #d1fae5; border-radius: 10px; padding: 1.25rem;
+  font-family: var(--font-mono); font-size: .82rem; line-height: 1.6;
+  white-space: pre-wrap; word-wrap: break-word; margin-bottom: .75rem;
+}
+.action-copy {
+  font-size: .8rem; font-weight: 600; color: var(--accent-2);
+  background: white; border: 1.5px solid #bbf7d0; border-radius: 100px;
+  padding: .5rem 1.1rem; cursor: pointer; transition: background .2s var(--ease), border-color .2s var(--ease);
+}
+.action-copy:hover { background: #ecfdf5; border-color: var(--accent); }
+.action-copy.copied { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* Final CTA */
+.action-final { padding: 4.5rem 0; }
+.action-final-card {
+  background: linear-gradient(135deg, #022c22 0%, #065f46 55%, #059669 100%);
+  border-radius: 20px; padding: 3.5rem 2.5rem; text-align: center; color: white;
+  position: relative; overflow: hidden;
+}
+.action-final-card h2 { font-family: var(--font-display); font-size: 2rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: .6rem; }
+.action-final-card p { font-family: var(--font-serif); color: rgba(255,255,255,.75); max-width: 500px; margin: 0 auto 1.75rem; line-height: 1.7; font-size: 1.02rem; }
+.action-final-btns { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+.action-final .btn-primary { background: white; color: #047857; }
+.action-final .btn-primary:hover { background: #ecfdf5; }
+.btn-ghost-light { border-color: rgba(255,255,255,.4); color: white; }
+.btn-ghost-light:hover { border-color: white; background: rgba(255,255,255,.1); color: white; }
+
+/* Sources */
+.action-sources { padding: 0 0 5rem; }
+.action-source-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.75rem; }
+.action-source {
+  display: flex; flex-direction: column; gap: .35rem;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r);
+  padding: 1.35rem; text-decoration: none; color: var(--ink);
+  transition: border-color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--ease);
+}
+.action-source:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-3px); opacity: 1; color: var(--ink); }
+.action-source-title { font-size: .92rem; font-weight: 700; line-height: 1.35; }
+.action-source-desc { font-size: .82rem; color: var(--ink-3); line-height: 1.55; }
+.action-sources-note { font-size: .82rem; color: var(--ink-3); font-style: italic; margin-top: 1.5rem; max-width: 640px; line-height: 1.6; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .action-stats { grid-template-columns: 1fr; }
+  .action-source-grid { grid-template-columns: 1fr; }
+  .action-timeline { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .action-phase::after { display: none; }
+  .action-progress { flex-direction: column; text-align: center; }
+  .action-progress-copy p { margin: 0 auto; }
+}
+@media (max-width: 640px) {
+  .action-step { grid-template-columns: 1fr; }
+  .action-step-side { flex-direction: row; align-items: center; justify-content: space-between; border-right: none; border-bottom: 1.5px solid var(--border); padding: 1rem 1.5rem; }
+  .action-step.done .action-step-side { border-bottom-color: #a7f3d0; }
+  .action-step-body { padding: 1.5rem; }
+  .action-tool-grid { grid-template-columns: 1fr; }
+  .action-timeline { grid-template-columns: 1fr; }
+}
+</style>
+
+<script>
+(function () {
+  var STEPS = ["documents", "calendar", "comment", "officials", "coalition", "ballot", "followup"];
+  var KEY = "bw-action-progress";
+  var CIRC = 326.7;
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; }
+  }
+  function save(list) {
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  var done = load().filter(function (s) { return STEPS.indexOf(s) !== -1; });
+
+  var ring = document.getElementById("action-ring-fill");
+  var countEl = document.getElementById("action-ring-count");
+  var titleEl = document.getElementById("action-progress-title");
+  var subEl = document.getElementById("action-progress-sub");
+  var resetBtn = document.getElementById("action-reset");
+
+  function render() {
+    var n = done.length, total = STEPS.length;
+    if (ring) ring.style.strokeDashoffset = CIRC * (1 - n / total);
+    if (countEl) countEl.textContent = n;
+    STEPS.forEach(function (id) {
+      var isDone = done.indexOf(id) !== -1;
+      var btn = document.querySelector('.action-check[data-step="' + id + '"]');
+      var card = document.querySelector('.action-step[data-step="' + id + '"]');
+      if (btn) {
+        btn.setAttribute("aria-pressed", isDone ? "true" : "false");
+        btn.querySelector(".action-check-label").textContent = isDone ? "Done" : "Mark done";
+      }
+      if (card) card.classList.toggle("done", isDone);
+    });
+    if (titleEl && subEl) {
+      if (n === 0) {
+        titleEl.textContent = "Start your action plan";
+        subEl.textContent = "Check off each step as you take it. Everything is saved locally on your device, nothing is sent anywhere.";
+      } else if (n === total) {
+        titleEl.textContent = "You've got the whole playbook. 🎯";
+        subEl.textContent = "You know exactly how to move your town. Now do it, and come back next budget season with receipts.";
+      } else {
+        titleEl.textContent = n + " of " + total + " steps taken";
+        subEl.textContent = "Keep going, momentum is the whole game in local accountability.";
+      }
+    }
+    if (resetBtn) resetBtn.hidden = n === 0;
+  }
+
+  document.querySelectorAll(".action-check").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var id = btn.getAttribute("data-step");
+      var i = done.indexOf(id);
+      if (i === -1) done.push(id); else done.splice(i, 1);
+      save(done);
+      render();
+    });
+  });
+
+  if (resetBtn) {
+    resetBtn.addEventListener("click", function () {
+      done = [];
+      save(done);
+      render();
+    });
+  }
+
+  render();
+
+  // ── Records request generator ──
+  function v(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+
+  var rrGen = document.getElementById("rr-gen");
+  if (rrGen) {
+    rrGen.addEventListener("click", function () {
+      var town = v("rr-town") || "[Town or agency name]";
+      var what = v("rr-what") || "[describe the records you want]";
+      var name = v("rr-name") || "[Your name]";
+      var email = v("rr-email") || "[Your email]";
+      var today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+      var letter =
+        today + "\n\n" +
+        "To the Records Custodian, " + town + ":\n\n" +
+        "Under my state's public records law, I request copies of the following records:\n\n" +
+        "  " + what + "\n\n" +
+        "I am requesting these as a member of the public. If any portion is exempt from disclosure, " +
+        "please release the remainder and cite the specific exemption for anything withheld. " +
+        "If fulfilling this request will cost more than $25, please contact me first with an estimate.\n\n" +
+        "Please provide the records electronically where possible. I look forward to your response " +
+        "within the timeframe required by law.\n\n" +
+        "Sincerely,\n" + name + "\n" + email;
+      document.getElementById("rr-output").textContent = letter;
+      document.getElementById("rr-out-wrap").hidden = false;
+    });
+  }
+
+  // ── Comment builder ──
+  var pcGen = document.getElementById("pc-gen");
+  if (pcGen) {
+    pcGen.addEventListener("click", function () {
+      var issue = v("pc-issue") || "[the issue you're raising]";
+      var fact = v("pc-fact") || "[one fact or number from the budget]";
+      var why = v("pc-why") || "[why it matters to you]";
+      var ask = v("pc-ask") || "[what you're asking them to do]";
+      var script =
+        "Good evening. My name is [your name] and I live in [your neighborhood].\n\n" +
+        "I'm here about " + issue + ".\n\n" +
+        "According to the town's own budget, " + fact + ".\n\n" +
+        "This matters to me because " + why + ".\n\n" +
+        "I'm asking you to " + ask + ". Thank you.";
+      document.getElementById("pc-output").textContent = script;
+      document.getElementById("pc-out-wrap").hidden = false;
+    });
+  }
+
+  // ── Copy buttons ──
+  document.querySelectorAll(".action-copy").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var pre = document.getElementById(btn.getAttribute("data-copy"));
+      if (!pre) return;
+      var text = pre.textContent;
+      var orig = btn.textContent;
+      function ok() { btn.textContent = "Copied ✓"; btn.classList.add("copied"); setTimeout(function () { btn.textContent = orig; btn.classList.remove("copied"); }, 1600); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(ok, function () { fallback(text, ok); });
+      } else { fallback(text, ok); }
+    });
+  });
+  function fallback(text, ok) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); ok(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+})();
+</script>
+{{ end }}

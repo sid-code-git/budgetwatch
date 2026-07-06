@@ -30,6 +30,7 @@
         <a href="{{ .Site.BaseURL }}team/">Team</a>
         <a href="{{ .Site.BaseURL }}about/">About</a>
         <a href="{{ .Site.BaseURL }}apply/">Apply</a>
+        <a href="{{ .Site.BaseURL }}action/" class="nav-cta">Take Action</a>
       </nav>
       <button class="search-btn" id="search-btn" aria-label="Search reports and briefs" title="Search (press /)">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -78,6 +79,7 @@
         <a href="{{ .Site.BaseURL }}team/">Team</a>
         <a href="{{ .Site.BaseURL }}about/">About</a>
         <a href="{{ .Site.BaseURL }}apply/">Apply</a>
+        <a href="{{ .Site.BaseURL }}action/">Take Action</a>
         <a href="{{ .Site.BaseURL }}feed.xml">RSS</a>
       </div>
       <p class="footer-tagline">You pay taxes. You deserve to know where the money goes.</p>
@@ -162,7 +164,8 @@
     var targets = document.querySelectorAll(
       '.featured-report, .report-card, .brief-home-card, .brief-card, .method-card, ' +
       '.about-do-card, .about-method-step, .about-cta-card, .trait-card, .topic-card, ' +
-      '.featured-brief, .section-header-row, .apply-banner-inner, .about-impact-item'
+      '.featured-brief, .section-header-row, .apply-banner-inner, .about-impact-item, ' +
+      '.action-step, .action-stat, .action-phase, .action-source'
     );
     if (!reduced) {
       var pending = [];
