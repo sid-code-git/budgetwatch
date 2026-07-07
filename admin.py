@@ -281,6 +281,27 @@ def git_push(path, message):
             return False, r.stderr.strip()
     return True, ""
 
+def set_draft_status(path, is_draft):
+    """Flip the 'draft:' frontmatter field. Returns True if the file changed."""
+    try:
+        with open(path) as fh:
+            content = fh.read()
+    except Exception:
+        return False
+    value = "true" if is_draft else "false"
+    new, n = re.subn(r'(?m)^draft:\s*(?:true|false)\s*$', f'draft: {value}', content)
+    if n == 0:
+        # No draft line yet — insert one at the end of the frontmatter block.
+        parts = content.split("---", 2)
+        if len(parts) < 3:
+            return False
+        new = "---" + parts[1].rstrip("\n") + f"\ndraft: {value}\n---" + parts[2]
+    if new == content:
+        return False
+    with open(path, "w") as fh:
+        fh.write(new)
+    return True
+
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -890,6 +911,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.handle_edit(urllib.parse.unquote(path[6:]))
         elif path.startswith("/delete/"):
             self.handle_delete(urllib.parse.unquote(path[8:]))
+        elif path.startswith("/publish/"):
+            self.handle_set_draft(urllib.parse.unquote(path[9:]), False, "reports")
+        elif path.startswith("/unpublish/"):
+            self.handle_set_draft(urllib.parse.unquote(path[11:]), True, "reports")
+        elif path.startswith("/briefs/publish/"):
+            self.handle_set_draft(urllib.parse.unquote(path[16:]), False, "briefs")
+        elif path.startswith("/briefs/unpublish/"):
+            self.handle_set_draft(urllib.parse.unquote(path[18:]), True, "briefs")
         elif path == "/briefs":
             self.handle_briefs_list()
         elif path == "/briefs/new":
@@ -970,6 +999,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
             rows = ""
             for b in briefs:
                 draft = b.get("draft", "true") == "true"
+                q     = urllib.parse.quote(b['slug'])
+                if draft:
+                    status = "<span class='badge badge-draft'>draft</span>"
+                    toggle = f'<a href="/briefs/publish/{q}" class="btn btn-green btn-sm">Publish</a>'
+                else:
+                    status = "<span class='badge badge-low'>published</span>"
+                    toggle = f'<a href="/briefs/unpublish/{q}" class="btn btn-outline btn-sm" onclick="return confirm(\'Unpublish this brief? It will disappear from the live site.\')">Unpublish</a>'
                 rows += f"""
 <div class=card>
   <div class=report-row>
@@ -978,9 +1014,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
       <div class=report-meta>{esc(b.get('topic',''))} · {esc(b.get('date',''))} · by {esc(b.get('author',''))}</div>
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
-      {"<span class='badge badge-draft'>draft</span>" if draft else "<span class='badge badge-low'>published</span>"}
-      <a href="/briefs/edit/{b['slug']}" class="btn btn-outline btn-sm">Edit</a>
-      <a href="/briefs/delete/{b['slug']}" class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="return confirm('Delete this brief?')">Delete</a>
+      {status}
+      {toggle}
+      <a href="/briefs/edit/{q}" class="btn btn-outline btn-sm">Edit</a>
+      <a href="/briefs/delete/{q}" class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="return confirm('Delete this brief?')">Delete</a>
     </div>
   </div>
 </div>"""
@@ -1605,6 +1642,13 @@ submitter_email: "{esc(d.get('submitter_email', ''))}"
             for r in reports:
                 sev   = r.get("severity", "medium")
                 draft = r.get("draft", "true") == "true"
+                q     = urllib.parse.quote(r['slug'])
+                if draft:
+                    status = "<span class='badge badge-draft'>draft</span>"
+                    toggle = f'<a href="/publish/{q}" class="btn btn-green btn-sm">Publish</a>'
+                else:
+                    status = "<span class='badge badge-low'>published</span>"
+                    toggle = f'<a href="/unpublish/{q}" class="btn btn-outline btn-sm" onclick="return confirm(\'Unpublish this report? It will disappear from the live site.\')">Unpublish</a>'
                 rows += f"""
 <div class=card>
   <div class=report-row>
@@ -1614,10 +1658,11 @@ submitter_email: "{esc(d.get('submitter_email', ''))}"
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0;flex-wrap:wrap">
       <span class="badge badge-{sev}">{sev}</span>
-      {"<span class='badge badge-draft'>draft</span>" if draft else ""}
+      {status}
       <div class=row-actions>
-        <a href="/edit/{r['slug']}" class="btn btn-outline btn-sm">Edit</a>
-        <a href="/delete/{r['slug']}" class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="return confirm('Delete this report?')">Delete</a>
+        {toggle}
+        <a href="/edit/{q}" class="btn btn-outline btn-sm">Edit</a>
+        <a href="/delete/{q}" class="btn btn-sm" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="return confirm('Delete this report?')">Delete</a>
       </div>
     </div>
   </div>
@@ -1663,6 +1708,16 @@ submitter_email: "{esc(d.get('submitter_email', ''))}"
             subprocess.run(["git", "commit", "-m", f"Delete report: {slug}"], cwd=BASE)
             subprocess.run(["git", "push"], cwd=BASE)
         self.redirect("/")
+
+    def handle_set_draft(self, slug, is_draft, section):
+        base_dir = BRIEFS if section == "briefs" else REPORTS
+        kind = "brief" if section == "briefs" else "report"
+        dest = "/briefs" if section == "briefs" else "/"
+        path = os.path.join(base_dir, slug + ".md")
+        if os.path.exists(path) and set_draft_status(path, is_draft):
+            verb = "Unpublish" if is_draft else "Publish"
+            git_push(path, f"{verb} {kind}: {slug}")
+        self.redirect(dest)
 
     def handle_save(self, data, files=None):
         town  = data.get("town", "town")
