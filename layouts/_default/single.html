@@ -14,7 +14,7 @@
     <p class="report-meta">
       {{ .Params.town }}, {{ .Params.state }} &nbsp;·&nbsp;
       FY{{ .Params.fiscal_year }} &nbsp;·&nbsp;
-      Population: {{ .Params.population | humanize }}
+      Population: {{ lang.FormatNumberCustom 0 (int (.Params.population | default 0)) }}
       {{ with .Params.source_url }}&nbsp;·&nbsp; <a href="{{ . }}" target="_blank" rel="noopener">Source document ↗</a>{{ end }}
     </p>
   </div>

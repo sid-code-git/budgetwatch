@@ -72,8 +72,13 @@ def parse_multipart(body, boundary):
     fields, files = {}, {}
     delim = b"--" + boundary
     for part in body.split(delim):
-        part = part.strip(b"\r\n")
-        if not part or part == b"--":
+        # Each real part is "\r\n<headers>\r\n\r\n<content>\r\n"; trim exactly
+        # one leading and one trailing CRLF so empty fields keep their blank line.
+        if part.startswith(b"\r\n"):
+            part = part[2:]
+        if part.endswith(b"\r\n"):
+            part = part[:-2]
+        if not part or part.strip() in (b"", b"--"):
             continue
         if b"\r\n\r\n" not in part:
             continue
@@ -305,36 +310,154 @@ def set_draft_status(path, is_draft):
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
+def to_paras(text):
+    """Plain text → HTML: blank-line-separated paragraphs; blocks of '-'/'•' lines → <ul>."""
+    out = []
+    for block in re.split(r"\n\s*\n", (text or "").strip()):
+        lines = [l.strip() for l in block.splitlines() if l.strip()]
+        if not lines:
+            continue
+        if all(l.startswith(("-", "•")) for l in lines):
+            items = "".join(f"<li>{l.lstrip('-• ').strip()}</li>" for l in lines)
+            out.append(f"<ul>{items}</ul>")
+        else:
+            out.append("<p>" + " ".join(lines) + "</p>")
+    return "\n".join(out)
+
 # ── markdown builder ───────────────────────────────────────────────────────────
 
-def build_report_md(d):
-    draft      = "false" if d.get("publish") == "true" else "true"
+def build_report_md(d, uploads=None):
+    """Build the report body in the reader-first order:
+    overview graph -> 3-line summary -> key numbers -> red/green flags ->
+    department deep dive -> supporting data -> two-part action."""
+    draft       = "false" if d.get("publish") == "true" else "true"
     news_desert = "true" if d.get("news_desert") == "on" else "false"
+    uploads     = uploads or []
+    images      = [u for u in uploads if u[2] != ".pdf"]
+    pdfs        = [u for u in uploads if u[2] == ".pdf"]
 
-    # Red flags (dynamic rows)
-    flags_md = ""
-    flag_facts  = d.getlist("flag_fact")
-    flag_qs     = d.getlist("flag_question")
-    flag_srcs   = d.getlist("flag_source")
-    flag_sevs   = d.getlist("flag_severity")
-    flag_names  = d.getlist("flag_name")
-    for i in range(len(flag_facts)):
-        if not flag_facts[i].strip():
+    def fig(url, caption):
+        cap = f'<p class="r-cap">{caption}</p>' if caption else ""
+        return f'<div class="r-fig"><img src="{url}" alt="Report graphic">{cap}</div>'
+
+    # 1 · Overview graph (first uploaded image)
+    overview_html = ""
+    if images:
+        overview_html = fig(images[0][1], d.get("overview_caption", "").strip())
+
+    # 2 · Three-line plain summary (lede)
+    lede = d.get("plain_summary", "").strip() or d.get("exec_summary", "").strip()
+    lede_html = f'<p class="r-lede">{lede}</p>' if lede else ""
+
+    # 3 · Key numbers strip
+    kn_items = [
+        (d.get("total_budget", "").strip(), "Total budget"),
+        (d.get("per_capita", "").strip(),   "Spending per resident"),
+        (d.get("fund_balance", "").strip(), "Savings (fund balance)"),
+        (d.get("debt_load", "").strip(),    "Total debt"),
+    ]
+    kn_cells = "".join(
+        f'<div class="r-kn"><div class="r-kn-n">{v}</div><div class="r-kn-l">{l}</div></div>'
+        for v, l in kn_items if v
+    )
+    keynums_html = f'<div class="r-keynums">{kn_cells}</div>' if kn_cells else ""
+
+    # Optional longer analytical summary (only if distinct from the lede)
+    exec_html = ""
+    exec_summary = d.get("exec_summary", "").strip()
+    if exec_summary and d.get("plain_summary", "").strip():
+        exec_html = to_paras(exec_summary)
+
+    # 4 · Flags — credits (green) first, then concerns (red); sharpest first
+    sev_rank = {"high": 0, "medium": 1, "low": 2}
+    flags = []
+    kinds      = d.getlist("flag_kind")
+    sevs       = d.getlist("flag_severity")
+    taglines   = d.getlist("flag_tagline")
+    facts      = d.getlist("flag_fact")
+    innocents  = d.getlist("flag_innocent")
+    questions  = d.getlist("flag_question")
+    sources    = d.getlist("flag_source")
+    names      = d.getlist("flag_name")  # legacy field, used as tagline fallback
+    n_rows = max(len(taglines), len(facts), len(kinds), 0)
+    for i in range(n_rows):
+        get = lambda lst, default="": lst[i].strip() if i < len(lst) else default
+        tagline = get(taglines) or get(names)
+        fact = get(facts)
+        if not tagline and not fact:
             continue
-        sev  = flag_sevs[i]  if i < len(flag_sevs)  else "medium"
-        name = flag_names[i] if i < len(flag_names) else ""
-        q    = flag_qs[i]    if i < len(flag_qs)    else ""
-        src  = flag_srcs[i]  if i < len(flag_srcs)  else ""
-        flags_md += f"""
-<div class="finding {sev}">
-  <div class="finding-label">{sev.title()} · {name}</div>
-  <div class="finding-fact">{flag_facts[i]}</div>
-  <div class="finding-question">{q}</div>
-  <div class="finding-source">Source: {src}</div>
-</div>
-"""
+        flags.append({
+            "kind": get(kinds, "concern") or "concern",
+            "sev": get(sevs, "medium") or "medium",
+            "tagline": tagline or fact[:90],
+            "fact": fact,
+            "innocent": get(innocents),
+            "question": get(questions),
+            "source": get(sources),
+        })
+    flags.sort(key=lambda f: (0 if f["kind"] == "credit" else 1, sev_rank.get(f["sev"], 1)))
 
-    # Peer comparison table rows
+    flags_html = ""
+    for f in flags:
+        red = f["kind"] != "credit"
+        cls = "red" if red else "green"
+        meta = (f'Red flag · {f["sev"].title()} concern' if red
+                else f'Green flag · {f["sev"].title()} confidence')
+        parts = [
+            f'<div class="rflag-tag">{f["tagline"]}</div>',
+            f'<div class="rflag-meta">{meta}</div>',
+        ]
+        if f["fact"]:
+            parts.append(f'<p>{f["fact"]}</p>')
+        if red and f["question"]:
+            parts.append(f'<p class="rflag-ask">The question to ask: {f["question"]}</p>')
+        if f["innocent"]:
+            label = "<b>The likely innocent explanation:</b> " if red else ""
+            parts.append(f'<p class="rflag-cap">{label}{f["innocent"]}</p>')
+        if f["source"]:
+            parts.append(f'<p class="rflag-cap">Source: {f["source"]}</p>')
+        flags_html += f'<div class="rflag {cls}">' + "\n".join(parts) + "</div>\n"
+
+    so_what = d.get("so_what", "").strip()
+    if so_what:
+        flags_html += f'<div class="r-sowhat"><b>So what:</b> {so_what}</div>\n'
+
+    flags_section = f"""## What's working, and what to watch
+
+{flags_html}""" if flags_html else ""
+
+    # 5 · Department deep dive
+    dept_figs = "".join(fig(u[1], "") for u in images[1:])
+    depts_html = ""
+    dnames  = d.getlist("dept_name")
+    damts   = d.getlist("dept_amount")
+    dpercap = d.getlist("dept_percap")
+    dcomp   = d.getlist("dept_comparison")
+    dbuys   = d.getlist("dept_buys")
+    dsrc    = d.getlist("dept_source")
+    for i in range(len(dnames)):
+        get = lambda lst: lst[i].strip() if i < len(lst) else ""
+        name = get(dnames)
+        if not name:
+            continue
+        head = name + (f" — {get(damts)}" if get(damts) else "")
+        block = [f"<h3>{head}</h3>"]
+        if get(dpercap):
+            block.append(f'<p class="r-dept-meta">≈ {get(dpercap)} per resident</p>')
+        if get(dcomp):
+            block.append(to_paras(get(dcomp)))
+        if get(dbuys):
+            block.append(to_paras(get(dbuys)))
+        if get(dsrc):
+            block.append(f'<p class="rflag-cap">Source: {get(dsrc)}</p>')
+        depts_html += '<div class="r-dept">' + "\n".join(block) + "</div>\n"
+
+    dept_section = f"""## Where the money actually goes
+
+{dept_figs}
+{depts_html}""" if (depts_html or dept_figs) else ""
+
+    # 6 · Supporting data (kept from the old model: peers, trend, debt)
     peers_md = ""
     peer_towns = d.getlist("peer_town")
     peer_pops  = d.getlist("peer_pop")
@@ -342,26 +465,77 @@ def build_report_md(d):
     peer_percap  = d.getlist("peer_percap")
     peer_notes   = d.getlist("peer_note")
     if any(t.strip() for t in peer_towns):
-        peers_md = "| Town | Population | Total Budget | Per-Capita | Notes |\n"
+        peers_md = "### How it compares to peer towns\n\n"
+        peers_md += "| Town | Population | Total Budget | Per-Capita | Notes |\n"
         peers_md += "|------|-----------|-------------|-----------|-------|\n"
         for i in range(len(peer_towns)):
             if not peer_towns[i].strip():
                 continue
             peers_md += f"| {peer_towns[i]} | {peer_pops[i] if i<len(peer_pops) else ''} | {peer_budgets[i] if i<len(peer_budgets) else ''} | {peer_percap[i] if i<len(peer_percap) else ''} | {peer_notes[i] if i<len(peer_notes) else ''} |\n"
 
-    # 5-year revenue trend table
     trend_md = ""
     trend_years    = d.getlist("trend_year")
     trend_revenues = d.getlist("trend_revenue")
     trend_expenses = d.getlist("trend_expense")
     trend_balances = d.getlist("trend_balance")
     if any(y.strip() for y in trend_years):
-        trend_md = "| Year | Total Revenue | Total Expenditure | Fund Balance |\n"
+        trend_md = "### The five-year picture\n\n"
+        trend_md += "| Year | Total Revenue | Total Expenditure | Fund Balance |\n"
         trend_md += "|------|-------------|-----------------|-------------|\n"
         for i in range(len(trend_years)):
             if not trend_years[i].strip():
                 continue
             trend_md += f"| {trend_years[i]} | {trend_revenues[i] if i<len(trend_revenues) else ''} | {trend_expenses[i] if i<len(trend_expenses) else ''} | {trend_balances[i] if i<len(trend_balances) else ''} |\n"
+
+    debt_md = ""
+    debt_bits = []
+    if d.get("bonded_debt", "").strip():      debt_bits.append(f"**Bonded debt:** {d.get('bonded_debt').strip()}")
+    if d.get("pension_liability", "").strip(): debt_bits.append(f"**Unfunded pension liability:** {d.get('pension_liability').strip()}")
+    if d.get("opeb_liability", "").strip():    debt_bits.append(f"**Retiree health (OPEB):** {d.get('opeb_liability').strip()}")
+    if d.get("debt_service_pct", "").strip():  debt_bits.append(f"**Debt payments as share of general fund:** {d.get('debt_service_pct').strip()}")
+    if debt_bits or d.get("debt_narrative", "").strip():
+        debt_md = "### Debt & long-term obligations\n\n"
+        if debt_bits:
+            debt_md += " &nbsp;·&nbsp; ".join(debt_bits) + "\n\n"
+        if d.get("debt_narrative", "").strip():
+            debt_md += d.get("debt_narrative").strip() + "\n"
+
+    numbers_section = ""
+    if peers_md or trend_md or debt_md:
+        numbers_section = "## The numbers behind it\n\n" + "\n".join(x for x in (peers_md, trend_md, debt_md) if x)
+
+    # 7 · Action — two parts
+    in_motion   = d.get("action_in_motion", "").strip()
+    unaddressed = d.get("action_unaddressed", "").strip()
+    next_hearing = d.get("next_hearing", "").strip()
+    foia_contact = d.get("foia_contact", "").strip()
+    action_html = ""
+    if in_motion or next_hearing:
+        inner = to_paras(in_motion)
+        if next_hearing:
+            inner += f'<p><b>Next budget hearing:</b> {next_hearing}</p>'
+        action_html += f'<div class="r-action"><h3>What\'s already happening</h3>{inner}</div>\n'
+    if unaddressed or foia_contact:
+        inner = to_paras(unaddressed)
+        if foia_contact:
+            inner += f'<p class="rflag-cap">Records contact: {foia_contact}</p>'
+        action_html += f'<div class="r-action"><h3>What isn\'t being addressed yet — and how to push</h3>{inner}</div>\n'
+    action_section = f"""## How residents can weigh in
+
+{action_html}""" if action_html else ""
+
+    # Attached PDFs
+    docs_md = ""
+    if pdfs:
+        links = "\n".join(f"- [{os.path.splitext(orig)[0]} (PDF)]({url})" for orig, url, ext in pdfs)
+        docs_md = f"## Documents\n\n{links}\n"
+
+    summary_fm = (d.get("plain_summary", "") or d.get("exec_summary", "")).strip().replace(chr(34), chr(39)).replace("\n", " ")
+
+    body_parts = [p for p in (
+        overview_html, lede_html, keynums_html, exec_html,
+        flags_section, dept_section, numbers_section, action_section, docs_md,
+    ) if p]
 
     return f"""---
 title: "{d.get('title', '')}"
@@ -374,97 +548,11 @@ news_desert: {news_desert}
 lat: {d.get('lat', '0') or '0'}
 lng: {d.get('lng', '0') or '0'}
 source_url: "{d.get('source_url', '')}"
+summary: "{summary_fm}"
 draft: {draft}
 ---
 
-## I. Executive Summary
-
-{d.get('exec_summary', '')}
-
-**Total Budget:** {d.get('total_budget', '')} &nbsp;|&nbsp; **Per Capita:** {d.get('per_capita', '')} &nbsp;|&nbsp; **Fund Balance:** {d.get('fund_balance', '')} &nbsp;|&nbsp; **Debt Load:** {d.get('debt_load', '')}
-
-## II. Socioeconomic Context & Peer Comparison
-
-{d.get('socio_context', '')}
-
-### Population & Economic Trends
-
-{d.get('pop_trends', '')}
-
-### Peer Comparison
-
-{peers_md if peers_md else '_No peer data entered._'}
-
-## III. Revenue & Expenditure Ledger
-
-### Where the Money Comes From
-
-{d.get('revenue_sources', '')}
-
-### Where the Money Goes
-
-{d.get('expenditure_breakdown', '')}
-
-### 5-Year Trend
-
-{trend_md if trend_md else '_No trend data entered._'}
-
-## IV. Debt, Pensions & Long-Term Obligations
-
-**Bonded Debt:** {d.get('bonded_debt', '')}
-
-**Unfunded Pension Liability:** {d.get('pension_liability', '')}
-
-**OPEB Liability:** {d.get('opeb_liability', '')}
-
-**Debt Service as % of General Fund:** {d.get('debt_service_pct', '')}
-
-{d.get('debt_narrative', '')}
-
-## V. Community Impact Analysis
-
-### A. Education & Youth Programs
-
-{d.get('impact_education', '')}
-
-### B. Facilities, Infrastructure & Parks
-
-{d.get('impact_infrastructure', '')}
-
-### C. Public Safety Staffing & Allocation
-
-{d.get('impact_safety', '')}
-
-### D. Social Services & Senior Programs
-
-{d.get('impact_social', '')}
-
-## VI. Major Financial Red Flags & Ghost Indicators
-
-{flags_md.strip() if flags_md.strip() else '_No red flags entered._'}
-
-## VII. Governance & Transparency Audit
-
-{d.get('governance', '')}
-
-**Budget document publicly available:** {d.get('budget_public', '')} &nbsp;|&nbsp; **Last audit published:** {d.get('last_audit', '')} &nbsp;|&nbsp; **Public hearings held:** {d.get('public_hearings', '')}
-
-## VIII. Policy Options & Strategic Recommendations
-
-{d.get('recommendations', '')}
-
-## IX. Citizen Action Guide
-
-{d.get('citizen_action', '')}
-
-**Next budget hearing:** {d.get('next_hearing', '')}
-
-**FOIA contact:** {d.get('foia_contact', '')}
-
-## X. Conclusion & Long-Term Outlook
-
-{d.get('conclusion', '')}
-"""
+""" + "\n\n".join(body_parts) + "\n"
 
 # ── styles ─────────────────────────────────────────────────────────────────────
 
@@ -557,32 +645,56 @@ def page(title, body, active="reports"):
 
 FLAG_TPL = """<div class="flag-block" id="flag-{n}">
   <button type=button class=remove-btn onclick="removeEl('flag-{n}')" title=Remove>✕</button>
-  <h4>Red Flag #{n}</h4>
+  <h4>Flag #{n}</h4>
   <div class=flag-grid>
     <div class=form-group>
-      <label>Severity</label>
-      <select name=flag_severity>
-        <option value=high>🔴 High</option>
-        <option value=medium selected>🟠 Medium</option>
-        <option value=low>🟢 Low</option>
+      <label>Kind</label>
+      <select name=flag_kind>
+        <option value=concern selected>🔴 Concern (red)</option>
+        <option value=credit>🟢 Credit (green — what's working)</option>
       </select>
     </div>
     <div class=form-group>
-      <label>Flag name</label>
-      <input type=text name=flag_name placeholder="e.g. Vacancy trick, structural deficit">
+      <label>Severity / weight</label>
+      <select name=flag_severity>
+        <option value=high>High</option>
+        <option value=medium selected>Medium</option>
+        <option value=low>Low</option>
+      </select>
     </div>
     <div class="form-group full">
-      <label>Fact — what do the numbers say?</label>
-      <textarea name=flag_fact rows=2 placeholder="Police Dept budget rose 43% YoY, from $1.2M to $1.72M."></textarea>
+      <label>Tagline — one bold plain-language line <span style="color:#dc2626">*</span></label>
+      <input type=text name=flag_tagline placeholder="A third of the budget rides on shopping — and the city is running out of room to grow.">
     </div>
     <div class="form-group full">
-      <label>Neutral public question</label>
-      <textarea name=flag_question rows=2 placeholder="What drove the 43% increase? Was this planned?"></textarea>
+      <label>The detail — the number that proves it</label>
+      <textarea name=flag_fact rows=2 placeholder="Sales tax brings in $45.2M, nearly 30% of all revenue — more than property tax ($34.9M)."></textarea>
+    </div>
+    <div class="form-group full">
+      <label>Likely innocent explanation (concerns) / short caveat (credits)</label>
+      <textarea name=flag_innocent rows=2 placeholder="Huge reserves and low debt are exactly the cushion a city builds for this."></textarea>
+    </div>
+    <div class="form-group full">
+      <label>The question to ask (concerns end in a question, never a verdict)</label>
+      <textarea name=flag_question rows=2 placeholder="If retail sales dip, which services get cut first — and is there a written plan?"></textarea>
     </div>
     <div class="form-group full">
       <label>Source citation</label>
-      <input type=text name=flag_source placeholder="FY2024 Annual Budget, p. 34">
+      <input type=text name=flag_source placeholder="FY2026 Adopted Budget Book, Fund Summaries pp. 240–241">
     </div>
+  </div>
+</div>"""
+
+DEPT_TPL = """<div class="peer-block" id="dept-{n}">
+  <button type=button class=remove-btn onclick="removeEl('dept-{n}')" title=Remove>✕</button>
+  <h4>Spending area #{n}</h4>
+  <div class=form-grid>
+    <div class=form-group><label>Area name</label><input type=text name=dept_name placeholder="Roads & infrastructure"></div>
+    <div class=form-group><label>Amount</label><input type=text name=dept_amount placeholder="$33.4 million"></div>
+    <div class=form-group><label>Per resident (optional)</label><input type=text name=dept_percap placeholder="$1,070"></div>
+    <div class=form-group><label>Source (optional)</label><input type=text name=dept_source placeholder="Budget Book p. 240"></div>
+    <div class="form-group full"><label>How it compares / what's notable</label><textarea name=dept_comparison rows=2 placeholder="The largest line in the budget; 42.5% of this year's capital program goes to roadways — the biggest category."></textarea></div>
+    <div class="form-group full"><label>What it buys on the ground (the pothole test)</label><textarea name=dept_buys rows=3 placeholder="If a street has sat cracked for three years, the budget says it isn't a money problem — so ask where your street ranks on the pavement list, not why there's no money."></textarea></div>
   </div>
 </div>"""
 
@@ -691,14 +803,13 @@ def render_new_form(alert=""):
     first_flag  = FLAG_TPL.replace("{n}", "1")
     first_peer  = PEER_TPL.replace("{n}", "1")
     first_trend = TREND_TPL.replace("{n}", "1")
+    first_dept  = DEPT_TPL.replace("{n}", "1")
 
     toc_sections = [
-        ("s-meta","Town Info"), ("s-exec","I. Executive Summary"),
-        ("s-socio","II. Socioeconomic"), ("s-ledger","III. Revenue & Expenditure"),
-        ("s-debt","IV. Debt & Pensions"), ("s-impact","V. Community Impact"),
-        ("s-flags","VI. Red Flags"), ("s-gov","VII. Governance"),
-        ("s-recs","VIII. Recommendations"), ("s-citizen","IX. Citizen Action"),
-        ("s-conclusion","X. Conclusion"),
+        ("s-meta","Town Info"), ("s-overview","1. Overview Graph"),
+        ("s-summary","2. Plain Summary"), ("s-keynums","3. Key Numbers"),
+        ("s-flags","4. Flags"), ("s-depts","5. Where the Money Goes"),
+        ("s-data","6. Supporting Data"), ("s-action","7. Action"),
     ]
     toc = '<div class=toc>' + "".join(f'<a href="#{i}">{l}</a>' for i,l in toc_sections) + '</div>'
 
@@ -737,113 +848,95 @@ def render_new_form(alert=""):
   </div>
 </div>
 
-<!-- ── I. EXEC SUMMARY ── -->
-<div class=card id=s-exec>
-  <div class=card-header><span class=card-num>I</span><div><div class=card-title>Executive Summary</div><div class=card-subtitle>High-level financial snapshot — 2–3 sentences a taxpayer can read in 30 seconds</div></div></div>
-  <div class=form-group><label>Summary</label><textarea name=exec_summary rows=4 placeholder="This report examines Springfield's FY{year} budget of $4.2M — a 12% increase from the prior year despite a declining population. We found three significant red flags..."></textarea></div>
-  <div class=sub-label>Key numbers (shown as a stats bar)</div>
-  <div class=form-grid-4>
-    <div class=form-group><label>Total Budget</label><input type=text name=total_budget placeholder="$4.2M"></div>
-    <div class=form-group><label>Per Capita Spending</label><input type=text name=per_capita placeholder="$875"></div>
-    <div class=form-group><label>Fund Balance</label><input type=text name=fund_balance placeholder="$320K (7.6%)"></div>
-    <div class=form-group><label>Total Debt Load</label><input type=text name=debt_load placeholder="$1.1M"></div>
+<!-- ── 1. OVERVIEW GRAPH ── -->
+<div class=card id=s-overview>
+  <div class=card-header><span class=card-num>1</span><div><div class=card-title>Overview Graph</div><div class=card-subtitle>The money-flow chart shown full-width at the very top of the page</div></div></div>
+  <div class=form-group>
+    <label>Upload graphics</label>
+    <input type=file name=graphics multiple accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/pdf">
+    <p class=hint>The <b>first image</b> becomes the top-of-page overview graph. Extra images appear at the start of "Where the money actually goes." PDFs become download links.</p>
+  </div>
+  <div class="form-group" style="margin-top:.75rem">
+    <label>Overview graph caption</label>
+    <input type=text name=overview_caption placeholder="Where the money comes from (left) and where it goes (right), FY{year}, all funds. Source: Budget Book pp. 240–241.">
   </div>
 </div>
 
-<!-- ── II. SOCIOECONOMIC ── -->
-<div class=card id=s-socio>
-  <div class=card-header><span class=card-num>II</span><div><div class=card-title>Socioeconomic Context & Peer Comparison</div><div class=card-subtitle>Population trends, inflation, economic drivers, and how this town compares</div></div></div>
-  <div class=form-group><label>Context narrative</label><textarea name=socio_context rows=4 placeholder="Springfield has lost 8% of its population since 2015, shrinking the tax base while fixed costs remain..."></textarea></div>
-  <div class=form-group style="margin-top:.75rem"><label>Population & economic trends (key data points)</label><textarea name=pop_trends rows=3 placeholder="Population 2015: 5,200 → 2024: 4,800 (-7.7%). Median household income: $41,200. Unemployment: 6.1% vs. state avg 4.3%."></textarea></div>
-  <div class=sub-label>Peer Comparison</div>
+<!-- ── 2. PLAIN SUMMARY ── -->
+<div class=card id=s-summary>
+  <div class=card-header><span class=card-num>2</span><div><div class=card-title>3-Line Plain Summary</div><div class=card-subtitle>Three plain sentences: what the budget is, what it's mostly spent on, and the one thing to watch</div></div></div>
+  <div class=form-group>
+    <label>Plain summary (the lede)</label>
+    <textarea name=plain_summary rows=4 placeholder="Springfield runs a $4.2M budget to pave roads, fund its police department, and keep the library open. Most of the money comes from property taxes. The thing to watch: spending has grown 12% while the town's population shrank."></textarea>
+  </div>
+  <div class=form-group style="margin-top:.75rem">
+    <label>Analytical summary (optional, deeper context)</label>
+    <textarea name=exec_summary rows=3 placeholder="Optional: a longer analytical read on the budget for readers who want more."></textarea>
+  </div>
+</div>
+
+<!-- ── 3. KEY NUMBERS ── -->
+<div class=card id=s-keynums>
+  <div class=card-header><span class=card-num>3</span><div><div class=card-title>Key Numbers</div><div class=card-subtitle>Rendered as a stats strip under the summary</div></div></div>
+  <div class=form-grid-4>
+    <div class=form-group><label>Total budget</label><input type=text name=total_budget placeholder="$4.2M"></div>
+    <div class=form-group><label>Spending per resident</label><input type=text name=per_capita placeholder="$875"></div>
+    <div class=form-group><label>Savings (fund balance)</label><input type=text name=fund_balance placeholder="7.6% ($320K)"></div>
+    <div class=form-group><label>Total debt</label><input type=text name=debt_load placeholder="$1.1M"></div>
+  </div>
+</div>
+
+<!-- ── 4. FLAGS ── -->
+<div class=card id=s-flags>
+  <div class=card-header><span class=card-num>4</span><div><div class=card-title>Flags (concerns & credits)</div><div class=card-subtitle>Red = concern, green = what's working. Every flag needs a one-line tagline. Concerns end in questions, never verdicts.</div></div></div>
+  <div id=flags-container>{first_flag}</div>
+  <button type=button class=add-row-btn onclick="addBlock('flags-container', flagTpl, 'flag')">+ Add flag</button>
+  <div class=form-group style="margin-top:1.25rem">
+    <label>"So what" — one plain paragraph a resident takes away from the flags</label>
+    <textarea name=so_what rows=2 placeholder="For a resident, this town is about as healthy as it gets — the one thing worth watching is whether the city plans, in public, for the year its biggest revenue source stops growing."></textarea>
+  </div>
+</div>
+
+<!-- ── 5. WHERE THE MONEY GOES ── -->
+<div class=card id=s-depts>
+  <div class=card-header><span class=card-num>5</span><div><div class=card-title>Where the Money Actually Goes</div><div class=card-subtitle>One block per major area — how much, how it compares, and what it buys on the ground</div></div></div>
+  <div id=depts-container>{first_dept}</div>
+  <button type=button class=add-row-btn onclick="addBlock('depts-container', deptTpl, 'dept')">+ Add spending area</button>
+</div>
+
+<!-- ── 6. SUPPORTING DATA ── -->
+<div class=card id=s-data>
+  <div class=card-header><span class=card-num>6</span><div><div class=card-title>Supporting Data (optional)</div><div class=card-subtitle>Peer comparison, five-year trend, and debt — rendered as "The numbers behind it"</div></div></div>
+  <div class=sub-label>Peer comparison</div>
   <div id=peers-container>{first_peer}</div>
   <button type=button class=add-row-btn onclick="addBlock('peers-container', peerTpl, 'peer')">+ Add peer town</button>
-</div>
-
-<!-- ── III. LEDGER ── -->
-<div class=card id=s-ledger>
-  <div class=card-header><span class=card-num>III</span><div><div class=card-title>Revenue & Expenditure Ledger</div><div class=card-subtitle>Where money comes from and goes — include percentages</div></div></div>
-  <div class=form-grid>
-    <div class=form-group><label>Revenue sources</label><textarea name=revenue_sources rows=5 placeholder="Property tax: $2.1M (50%)\nState aid: $1.0M (24%)\nSales tax: $620K (15%)\nFees & permits: $480K (11%)"></textarea></div>
-    <div class=form-group><label>Expenditure breakdown</label><textarea name=expenditure_breakdown rows=5 placeholder="Public safety: $1.72M (41%)\nGeneral govt: $840K (20%)\nPublic works: $630K (15%)\nDebt service: $420K (10%)\nParks & rec: $180K (4%)"></textarea></div>
-  </div>
-  <div class=sub-label>5-Year Trend</div>
+  <div class=sub-label>5-year trend</div>
   <div id=trend-container>{first_trend}</div>
   <button type=button class=add-row-btn onclick="addBlock('trend-container', trendTpl, 'trend')">+ Add year</button>
-</div>
-
-<!-- ── IV. DEBT ── -->
-<div class=card id=s-debt>
-  <div class=card-header><span class=card-num>IV</span><div><div class=card-title>Debt, Pensions & Long-Term Obligations</div><div class=card-subtitle>The numbers that don't show up in the headline budget</div></div></div>
+  <div class=sub-label>Debt & long-term obligations</div>
   <div class=form-grid-4>
-    <div class=form-group><label>Bonded Debt</label><input type=text name=bonded_debt placeholder="$680K"></div>
-    <div class=form-group><label>Unfunded Pension Liability</label><input type=text name=pension_liability placeholder="$1.2M"></div>
-    <div class=form-group><label>OPEB Liability</label><input type=text name=opeb_liability placeholder="$340K"></div>
-    <div class=form-group><label>Debt Service % of General Fund</label><input type=text name=debt_service_pct placeholder="10%"></div>
+    <div class=form-group><label>Bonded debt</label><input type=text name=bonded_debt placeholder="$680K"></div>
+    <div class=form-group><label>Unfunded pension liability</label><input type=text name=pension_liability placeholder="$1.2M"></div>
+    <div class=form-group><label>Retiree health (OPEB)</label><input type=text name=opeb_liability placeholder="$340K"></div>
+    <div class=form-group><label>Debt payments % of general fund</label><input type=text name=debt_service_pct placeholder="10%"></div>
   </div>
-  <div class=form-group style="margin-top:.85rem"><label>Narrative</label><textarea name=debt_narrative rows=3 placeholder="The town's pension fund is 61% funded, well below the recommended 80% floor. At current contribution rates..."></textarea></div>
+  <div class=form-group style="margin-top:.85rem"><label>Debt narrative (optional)</label><textarea name=debt_narrative rows=3 placeholder="The pension fund is 61% funded, below the recommended 80% floor..."></textarea></div>
 </div>
 
-<!-- ── V. COMMUNITY IMPACT ── -->
-<div class=card id=s-impact>
-  <div class=card-header><span class=card-num>V</span><div><div class=card-title>Community Impact Analysis</div><div class=card-subtitle>What the budget means for residents on the ground</div></div></div>
-  <div class=sub-label>A. Education & Youth Programs</div>
-  <div class=form-group><textarea name=impact_education rows=3 placeholder="Youth programs funding cut 22% vs. prior year. After-school program serving 180 kids eliminated..."></textarea></div>
-  <div class=sub-label>B. Facilities, Infrastructure & Parks</div>
-  <div class=form-group><textarea name=impact_infrastructure rows=3 placeholder="Road resurfacing budget: $85K — enough to pave 0.4 lane miles. Backlog estimated at 12 lane miles..."></textarea></div>
-  <div class=sub-label>C. Public Safety Staffing & Allocation</div>
-  <div class=form-group><textarea name=impact_safety rows=3 placeholder="1.8 officers per 1,000 residents vs. state average of 2.4. Police budget rose 43% while fire remained flat..."></textarea></div>
-  <div class=sub-label>D. Social Services & Senior Programs</div>
-  <div class=form-group><textarea name=impact_social rows=3 placeholder="Senior center operating hours reduced. Meals on Wheels contract not renewed for FY{year}..."></textarea></div>
-</div>
-
-<!-- ── VI. RED FLAGS ── -->
-<div class=card id=s-flags>
-  <div class=card-header><span class=card-num>VI</span><div><div class=card-title>Major Financial Red Flags & Ghost Indicators</div><div class=card-subtitle>Structural deficits, the vacancy trick, OPEB liabilities, fund balance erosion</div></div></div>
-  <div id=flags-container>{first_flag}</div>
-  <button type=button class=add-row-btn onclick="addBlock('flags-container', flagTpl, 'flag')">+ Add red flag</button>
-</div>
-
-<!-- ── VII. GOVERNANCE ── -->
-<div class=card id=s-gov>
-  <div class=card-header><span class=card-num>VII</span><div><div class=card-title>Governance & Transparency Audit</div><div class=card-subtitle>How accessible is this data to a regular citizen?</div></div></div>
-  <div class=form-group><label>Narrative</label><textarea name=governance rows=4 placeholder="The FY{year} budget was posted to the town website 3 days before the vote, giving residents almost no time to review. The document spans 214 pages with no summary..."></textarea></div>
-  <div class=form-grid-3 style="margin-top:.85rem">
-    <div class=form-group><label>Budget publicly available?</label><input type=text name=budget_public placeholder="Yes, PDF only"></div>
-    <div class=form-group><label>Last audit published</label><input type=text name=last_audit placeholder="FY2022 (2 years behind)"></div>
-    <div class=form-group><label>Public hearings held</label><input type=text name=public_hearings placeholder="1 hearing, 4 days' notice"></div>
-  </div>
-</div>
-
-<!-- ── VIII. RECOMMENDATIONS ── -->
-<div class=card id=s-recs>
-  <div class=card-header><span class=card-num>VIII</span><div><div class=card-title>Policy Options & Strategic Recommendations</div><div class=card-subtitle>Shared services, capital prioritization, revenue optimization</div></div></div>
-  <div class=form-group><textarea name=recommendations rows=6 placeholder="1. Shared services agreement with neighboring Millbrook for DPW could save ~$180K/yr.\n2. Vacancy tax on downtown properties could generate $60–90K in new revenue.\n3. Five-year capital plan needed — current infrastructure backlog is growing faster than repair budget."></textarea></div>
-</div>
-
-<!-- ── IX. CITIZEN ACTION ── -->
-<div class=card id=s-citizen>
-  <div class=card-header><span class=card-num>IX</span><div><div class=card-title>Citizen Action Guide</div><div class=card-subtitle>What a resident can do right now</div></div></div>
-  <div class=form-group><label>Action steps</label><textarea name=citizen_action rows=4 placeholder="1. Attend the next Town Council meeting and ask the Mayor about the police budget increase.\n2. File a FOIA request for the full audited financials using the link below.\n3. Sign up for the budget alert mailing list at springfield.gov/alerts."></textarea></div>
-  <div class=form-grid style="margin-top:.85rem">
-    <div class=form-group><label>Next budget hearing date</label><input type=text name=next_hearing placeholder="March 15, 2025 · 7pm · Town Hall"></div>
-    <div class=form-group><label>FOIA / records contact</label><input type=text name=foia_contact placeholder="clerk@springfield.gov · (555) 000-0000"></div>
-  </div>
-</div>
-
-<!-- ── X. CONCLUSION ── -->
-<div class=card id=s-conclusion>
-  <div class=card-header><span class=card-num>X</span><div><div class=card-title>Conclusion & Long-Term Outlook</div><div class=card-subtitle>Where is this town headed if nothing changes?</div></div></div>
-  <div class=form-group><textarea name=conclusion rows=5 placeholder="Springfield is caught in a fiscal squeeze familiar to many small post-industrial towns: a shrinking tax base, rising legacy costs, and deferred infrastructure. Without structural changes, the town is likely to face a service-level crisis within 5–7 years..."></textarea></div>
-</div>
-
-<!-- ── GRAPHICS ── -->
-<div class=card>
-  <div class=card-header><span class=card-num>📎</span><div><div class=card-title>Graphics & Attachments</div><div class=card-subtitle>Charts, tables, scans — images appear in a \"Charts & Graphics\" section; PDFs become download links</div></div></div>
+<!-- ── 7. ACTION ── -->
+<div class=card id=s-action>
+  <div class=card-header><span class=card-num>7</span><div><div class=card-title>How Residents Can Weigh In</div><div class=card-subtitle>Two parts: what's already in motion, and what isn't being addressed</div></div></div>
   <div class=form-group>
-    <label>Upload files</label>
-    <input type=file name=graphics multiple accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/pdf">
-    <p class=hint>You can select multiple files. JPG, PNG, WebP, GIF, SVG, or PDF.</p>
+    <label>A. What's already happening (hearings held, comment periods, petitions, tools, dates)</label>
+    <textarea name=action_in_motion rows=4 placeholder="The FY{year} budget was adopted in September after two hearings. The next cycle's hearings run August–September — that's when comment actually shapes the numbers. The town posts monthly financial reports online."></textarea>
+  </div>
+  <div class=form-group style="margin-top:.75rem">
+    <label>B. What isn't being addressed — and how to push (one item per line starting with "-")</label>
+    <textarea name=action_unaddressed rows=5 placeholder="- No public build-out plan. Ask for a written revenue transition plan at the August hearing.&#10;- Pension costs are hard to find. Ask Finance to add a one-line summary to the budget book; if they decline, file a records request for the ACFR."></textarea>
+  </div>
+  <div class=form-grid style="margin-top:.85rem">
+    <div class=form-group><label>Next budget hearing (optional)</label><input type=text name=next_hearing placeholder="March 15, {year} · 7pm · Town Hall"></div>
+    <div class=form-group><label>Records contact (optional)</label><input type=text name=foia_contact placeholder="clerk@town.gov · (555) 000-0000"></div>
   </div>
 </div>
 
@@ -861,11 +954,12 @@ def render_new_form(alert=""):
 
 <script>
 // counters for each block type
-const counts = {{flag: 1, peer: 1, trend: 1}};
+const counts = {{flag: 1, peer: 1, trend: 1, dept: 1}};
 
 const flagTpl = `{FLAG_TPL}`;
 const peerTpl = `{PEER_TPL}`;
 const trendTpl = `{TREND_TPL}`;
+const deptTpl = `{DEPT_TPL}`;
 
 function addBlock(containerId, tpl, type) {{
   counts[type]++;
@@ -1724,9 +1818,8 @@ submitter_email: "{esc(d.get('submitter_email', ''))}"
         state = data.get("state", "xx").lower()
         fy    = data.get("fiscal_year", str(datetime.now().year))
         slug  = f"{slugify(town)}-{slugify(state)}-{slugify(fy)}".strip("-")
-        content = build_report_md(data)
         uploads = save_uploads(files or {}, "graphics", slug)
-        content += graphics_md(uploads)
+        content = build_report_md(data, uploads)
         path = write_report(slug, content)
 
         msg = f"Add report: {town}, {state.upper()} FY{fy}"
