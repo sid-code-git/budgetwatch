@@ -887,17 +887,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
         elif path == "/new":
             self.send_html(page("New Report", render_new_form(), "new"))
         elif path.startswith("/edit/"):
-            self.handle_edit(path[6:])
+            self.handle_edit(urllib.parse.unquote(path[6:]))
         elif path.startswith("/delete/"):
-            self.handle_delete(path[8:])
+            self.handle_delete(urllib.parse.unquote(path[8:]))
         elif path == "/briefs":
             self.handle_briefs_list()
         elif path == "/briefs/new":
             self.send_html(page("New Brief", render_brief_form(), "new-brief"))
         elif path.startswith("/briefs/edit/"):
-            self.handle_brief_edit(path[13:])
+            self.handle_brief_edit(urllib.parse.unquote(path[13:]))
         elif path.startswith("/briefs/delete/"):
-            self.handle_brief_delete(path[15:])
+            self.handle_brief_delete(urllib.parse.unquote(path[15:]))
         elif path == "/applications":
             self.handle_applications()
         elif path.startswith("/photo/"):
@@ -950,11 +950,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path == "/save":
             self.handle_save(data)
         elif path.startswith("/update/"):
-            self.handle_update(path[8:], data)
+            self.handle_update(urllib.parse.unquote(path[8:]), data)
         elif path == "/briefs/save":
             self.handle_brief_save(data)
         elif path.startswith("/briefs/update/"):
-            self.handle_brief_update(path[15:], data)
+            self.handle_brief_update(urllib.parse.unquote(path[15:]), data)
         elif path == "/submissions/setup":
             self.handle_submissions_setup_save(data)
         elif path == "/settings":
@@ -1519,7 +1519,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         town = d.get("town", "town")
         state = d.get("state", "xx").lower()
         fy = d.get("fiscal_year", str(datetime.now().year))
-        slug = f"{slugify(town)}-{slugify(state)}-{fy}-submitted"
+        slug = f"{slugify(town)}-{slugify(state)}-{slugify(fy)}-submitted".strip("-")
 
         # Build the markdown manually to preserve the freeform flags field
         content = f"""---
@@ -1668,7 +1668,7 @@ submitter_email: "{esc(d.get('submitter_email', ''))}"
         town  = data.get("town", "town")
         state = data.get("state", "xx").lower()
         fy    = data.get("fiscal_year", str(datetime.now().year))
-        slug  = f"{slugify(town)}-{slugify(state)}-{fy}"
+        slug  = f"{slugify(town)}-{slugify(state)}-{slugify(fy)}".strip("-")
         content = build_report_md(data)
         uploads = save_uploads(files or {}, "graphics", slug)
         content += graphics_md(uploads)
